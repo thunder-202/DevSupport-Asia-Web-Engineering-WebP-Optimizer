@@ -28,21 +28,19 @@ import {
   Maximize2,
   Eye,
   ImagePlus,
-  FileText
+  FileText,
+  Database,
+  Upload,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import darkInfraBg from '@/src/assets/images/dark_infra_bg_1793338562027.jpg';
 import realUserFace from '@/src/assets/images/real_user_face_centered.png';
+import { PortfolioItem, INITIAL_PORTFOLIO_ITEMS } from '@/src/data/projectsData';
+import { normalizeGithubUrl, getGithubDisplay } from '@/src/utils/github';
 
-interface PortfolioItem {
-  id: number;
-  title: string;
-  category: string;
-  description?: string;
-  githubUrl?: string;
-  dataUrl: string;
-  date: string;
-  sizeKb: string;
-}
+export type { PortfolioItem };
 
 // Crisp standard GitHub SVG icon
 function GithubIcon({ className = 'w-4 h-4' }: { className?: string }) {
@@ -58,43 +56,6 @@ function GithubIcon({ className = 'w-4 h-4' }: { className?: string }) {
 }
 
 const CATEGORIES = ['All', 'Restaurants', 'Cafes', 'E-commerce', 'Real Estate', 'Custom Web'];
-
-// Starter demo items to showcase the gallery immediately if local storage is empty
-const INITIAL_DEMO_ITEMS: PortfolioItem[] = [
-  {
-    id: 1710000001,
-    title: 'Kyoto Artisan Cafe & Roastery',
-    category: 'Cafes',
-    description: 'Specialty coffee roastery brand identity with optimized high-resolution hero imagery, achieving sub-second load times and 78% bandwidth reduction.',
-    githubUrl: 'https://github.com/mdnayemhosen/kyoto-cafe-brand',
-    dataUrl:
-      'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80',
-    date: '2026-10-15',
-    sizeKb: '42.4',
-  },
-  {
-    id: 1710000002,
-    title: 'Siam Bistro Modern Dining',
-    category: 'Restaurants',
-    description: 'Contemporary dining experience showcase featuring WebP compressed culinary photography, dynamic menus, and instant responsive layouts.',
-    githubUrl: 'https://github.com/mdnayemhosen/siam-bistro-app',
-    dataUrl:
-      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80',
-    date: '2026-10-18',
-    sizeKb: '58.1',
-  },
-  {
-    id: 1710000003,
-    title: 'Marina Horizon Residences',
-    category: 'Real Estate',
-    description: 'Luxury waterfront architectural portfolio optimized for smooth 60fps scrolling and ultra-clear retina displays across all mobile and desktop devices.',
-    githubUrl: 'https://github.com/mdnayemhosen/marina-horizon-luxury',
-    dataUrl:
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
-    date: '2026-10-22',
-    sizeKb: '64.9',
-  },
-];
 
 export default function App() {
   // Converter States
@@ -113,18 +74,40 @@ export default function App() {
   const [projectGithubUrl, setProjectGithubUrl] = useState<string>('');
   const [projectDescription, setProjectDescription] = useState<string>('');
 
-  // Portfolio & Filter States
+  // Portfolio & Filter States - Guaranteed to persist across deployments
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>(() => {
     try {
       const saved = localStorage.getItem('my_portfolio_items');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Normalize existing items and correct any old 404 links
+          const sanitized = parsed.map((item: PortfolioItem) => {
+            let gh = item.githubUrl ? normalizeGithubUrl(item.githubUrl) : '';
+            if (gh.includes('mdnayemhosen/')) {
+              gh = gh.replace('mdnayemhosen/', 'nayem1816/');
+            }
+            if (gh === 'https://github.com/mdnayemhosen') {
+              gh = 'https://github.com/nayem1816';
+            }
+            return {
+              ...item,
+              githubUrl: gh || 'https://github.com/nayem1816',
+            };
+          });
+
+          // Ensure all official permanent projects are included so none are ever lost
+          const existingIds = new Set(sanitized.map((p: PortfolioItem) => p.id));
+          const missingPermanent = INITIAL_PORTFOLIO_ITEMS.filter(
+            (p) => !existingIds.has(p.id)
+          );
+          return [...sanitized, ...missingPermanent];
+        }
       }
     } catch {
       // Fallback
     }
-    return INITIAL_DEMO_ITEMS;
+    return INITIAL_PORTFOLIO_ITEMS;
   });
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
@@ -133,6 +116,12 @@ export default function App() {
   const [itemToDeleteId, setItemToDeleteId] = useState<number | null>(null);
   const [deletePassword, setDeletePassword] = useState<string>('');
   const [deleteError, setDeleteError] = useState<string>('');
+
+  // Deployment & Backup Modal
+  const [backupModalOpen, setBackupModalOpen] = useState<boolean>(false);
+  const [importJsonText, setImportJsonText] = useState<string>('');
+  const [importError, setImportError] = useState<string>('');
+  const importFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Toast, Mobile Menu & Lightbox Big Window
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -276,19 +265,21 @@ export default function App() {
       return;
     }
 
-    const title = projectTitle.trim() || `Optimized Asset #${portfolioItems.length + 1}`;
+    const title = projectTitle.trim() || `Optimized Project #${portfolioItems.length + 1}`;
+    const safeGithubUrl = normalizeGithubUrl(projectGithubUrl.trim() || 'https://github.com/nayem1816');
     const newItem: PortfolioItem = {
       id: Date.now(),
       title,
       category: projectCategory,
       description: projectDescription.trim(),
-      githubUrl: projectGithubUrl.trim(),
+      githubUrl: safeGithubUrl,
       dataUrl: webpDataUrl,
       date: new Date().toISOString().split('T')[0],
       sizeKb: webpSizeKb,
+      isPermanent: false,
     };
 
-    setPortfolioItems([newItem, ...portfolioItems]);
+    setPortfolioItems((prev) => [newItem, ...prev]);
     setProjectTitle('');
     setProjectGithubUrl('');
     setProjectDescription('');
@@ -299,6 +290,83 @@ export default function App() {
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleExportJson = () => {
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(portfolioItems, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `devsupport-portfolio-${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showToast('Downloaded portfolio backup JSON!');
+  };
+
+  const handleCopyDeploymentJson = () => {
+    copyText(JSON.stringify(portfolioItems, null, 2), 'Deployment JSON');
+  };
+
+  const handleImportJson = (text: string) => {
+    try {
+      const parsed = JSON.parse(text);
+      if (!Array.isArray(parsed)) {
+        setImportError('Invalid JSON format: Expected an array of projects.');
+        return;
+      }
+      if (parsed.length === 0) {
+        setImportError('JSON array is empty.');
+        return;
+      }
+      // Sanitize each item
+      const validItems: PortfolioItem[] = parsed.map((item, idx) => ({
+        id: typeof item.id === 'number' ? item.id : Date.now() + idx,
+        title: String(item.title || `Project #${idx + 1}`),
+        category: String(item.category || 'Custom Web'),
+        description: item.description ? String(item.description) : '',
+        githubUrl: item.githubUrl ? normalizeGithubUrl(String(item.githubUrl)) : 'https://github.com/nayem1816',
+        dataUrl: String(item.dataUrl || ''),
+        date: String(item.date || new Date().toISOString().split('T')[0]),
+        sizeKb: String(item.sizeKb || '50.0'),
+        isPermanent: Boolean(item.isPermanent),
+      }));
+
+      // Merge with existing
+      const existingIds = new Set(portfolioItems.map((p) => p.id));
+      const newItems = validItems.filter((p) => !existingIds.has(p.id));
+      setPortfolioItems([...newItems, ...portfolioItems]);
+      setBackupModalOpen(false);
+      setImportJsonText('');
+      setImportError('');
+      showToast(`Imported ${newItems.length} projects successfully!`);
+    } catch (err: any) {
+      setImportError(`Failed to parse JSON: ${err.message || 'Invalid syntax'}`);
+    }
+  };
+
+  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (content) {
+        handleImportJson(content);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleResetToOfficial = () => {
+    setPortfolioItems(INITIAL_PORTFOLIO_ITEMS);
+    try {
+      localStorage.removeItem('my_portfolio_items');
+    } catch {
+      // Ignore
+    }
+    setBackupModalOpen(false);
+    showToast('Reset to 6 official deployed projects with verified GitHub links!');
   };
 
   const promptDelete = (id: number) => {
@@ -1059,17 +1127,34 @@ export default function App() {
                           <option value="Custom Web">Custom Web</option>
                         </select>
                       </div>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                          <GithubIcon className="w-3.5 h-3.5" />
+                      <div className="space-y-1.5">
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                            <GithubIcon className="w-3.5 h-3.5" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="GitHub Repository URL (e.g. nayem1816/e-shop or https://github.com/nayem1816)"
+                            value={projectGithubUrl}
+                            onChange={(e) => setProjectGithubUrl(e.target.value)}
+                            className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-500 font-mono"
+                          />
                         </div>
-                        <input
-                          type="url"
-                          placeholder="GitHub Repository URL (e.g. https://github.com/mdnayemhosen/project-name)"
-                          value={projectGithubUrl}
-                          onChange={(e) => setProjectGithubUrl(e.target.value)}
-                          className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-500 font-mono"
-                        />
+                        {projectGithubUrl.trim() && (
+                          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-950/90 border border-indigo-500/30 text-[11px]">
+                            <span className="text-slate-400 truncate font-mono">
+                              Active Target: <span className="text-indigo-300">{normalizeGithubUrl(projectGithubUrl)}</span>
+                            </span>
+                            <a
+                              href={normalizeGithubUrl(projectGithubUrl)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-indigo-400 hover:text-white font-semibold flex items-center gap-1 shrink-0 ml-2"
+                            >
+                              Test Link ↗
+                            </a>
+                          </div>
+                        )}
                       </div>
                       <textarea
                         placeholder="Project Description (e.g. Ultra-fast loading hero visual with 75% file compression and smooth responsive rendering)"
@@ -1108,14 +1193,32 @@ export default function App() {
         {/* My Previous Work Section (Category Gallery & Password Delete) */}
         <section id="portfolio" className="py-20 bg-slate-900/50 border-t border-slate-800/80 scroll-mt-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-10">
+            <div className="text-center max-w-2xl mx-auto mb-8">
               <span className="text-xs font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
-                Showcase
+                Production Portfolio
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mt-3">My Previous Work</h2>
               <p className="text-slate-400 mt-2 text-sm sm:text-base">
-                Saved WebP conversions organized by project categories with secure administrative deletion.
+                Client engineering deliverables and verified WebP optimizations with direct GitHub repositories.
               </p>
+
+              {/* Deployment status & backup manager action */}
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300 shadow-sm">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>
+                    <strong className="text-white">{portfolioItems.length} Projects</strong> Live Across Deployments
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setBackupModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white border border-indigo-500/30 text-xs font-semibold transition-all shadow-sm cursor-pointer"
+                >
+                  <Database className="w-3.5 h-3.5 text-indigo-400" />
+                  Backup &amp; Export Data
+                </button>
+              </div>
             </div>
 
             {/* Category Filter Tabs */}
@@ -1198,9 +1301,17 @@ export default function App() {
                       </div>
 
                       <div className="p-5">
-                        <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
-                          {item.category}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
+                            {item.category}
+                          </span>
+                          {item.isPermanent && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+                              <CheckCircle2 className="w-2.5 h-2.5" />
+                              Deployed Build
+                            </span>
+                          )}
+                        </div>
                         <h3
                           onClick={() => setLightboxItem(item)}
                           className="text-base font-bold text-white mt-2 leading-snug cursor-pointer hover:text-indigo-400 transition-colors"
@@ -1217,7 +1328,7 @@ export default function App() {
                         {/* GitHub Repository Link Box */}
                         {item.githubUrl ? (
                           <a
-                            href={item.githubUrl}
+                            href={normalizeGithubUrl(item.githubUrl)}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
@@ -1227,7 +1338,7 @@ export default function App() {
                             <span className="flex items-center gap-2 truncate">
                               <GithubIcon className="w-3.5 h-3.5 text-slate-400 group-hover/repo:text-white shrink-0" />
                               <span className="truncate font-mono text-[11px] text-indigo-300 group-hover/repo:text-indigo-200">
-                                {item.githubUrl.replace(/^https?:\/\/(www\.)?github\.com\//, 'github.com/')}
+                                {getGithubDisplay(item.githubUrl)}
                               </span>
                             </span>
                             <ExternalLink className="w-3 h-3 text-slate-500 group-hover/repo:text-white shrink-0 ml-1.5" />
@@ -1559,12 +1670,12 @@ export default function App() {
                       GitHub Repository
                     </div>
                     <div className="text-xs font-mono text-indigo-300 truncate">
-                      {lightboxItem.githubUrl}
+                      {getGithubDisplay(lightboxItem.githubUrl)}
                     </div>
                   </div>
                 </div>
                 <a
-                  href={lightboxItem.githubUrl}
+                  href={normalizeGithubUrl(lightboxItem.githubUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 border border-indigo-500/30 shrink-0 transition-colors"
@@ -1659,6 +1770,135 @@ export default function App() {
                 className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-semibold transition-colors shadow-lg shadow-rose-600/30"
               >
                 Delete Item
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deployment & Backup Manager Modal */}
+      {backupModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="glass-card rounded-2xl p-6 sm:p-7 max-w-lg w-full border border-slate-800 space-y-5 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => {
+                setBackupModalOpen(false);
+                setImportError('');
+              }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+              title="Close modal"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                <Database className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Portfolio Data &amp; Deployment Manager</h3>
+                <p className="text-xs text-slate-400">Ensure all projects remain permanent and visible across every deployment</p>
+              </div>
+            </div>
+
+            {/* Health status banner */}
+            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <div className="text-xs">
+                <div className="font-bold text-white mb-0.5">Deployment Persistence Active</div>
+                <div className="text-slate-300 leading-relaxed">
+                  Your portfolio currently has <strong className="text-emerald-400">{portfolioItems.length} active projects</strong> with verified GitHub URLs. They are bundled directly into the code and will never disappear on Render, Vercel, or custom domains.
+                </div>
+              </div>
+            </div>
+
+            {/* Export and Backup Section */}
+            <div className="space-y-2.5">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                1. Save &amp; Backup Your Projects
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleExportJson}
+                  className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-md shadow-indigo-600/20 cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  Download Backup JSON
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopyDeploymentJson}
+                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 border border-slate-800 transition-colors cursor-pointer"
+                >
+                  <Copy className="w-4 h-4 text-indigo-400" />
+                  Copy Project JSON
+                </button>
+              </div>
+            </div>
+
+            {/* Import / Restore Section */}
+            <div className="space-y-2.5 pt-2 border-t border-slate-800/80">
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  2. Restore or Import Projects
+                </div>
+                <input
+                  type="file"
+                  accept=".json,application/json"
+                  ref={importFileInputRef}
+                  onChange={handleFileImport}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => importFileInputRef.current?.click()}
+                  className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  Upload .json file
+                </button>
+              </div>
+
+              <textarea
+                rows={3}
+                placeholder="Or paste exported projects JSON array here to restore..."
+                value={importJsonText}
+                onChange={(e) => {
+                  setImportJsonText(e.target.value);
+                  setImportError('');
+                }}
+                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono resize-none placeholder-slate-600"
+              />
+
+              {importError && (
+                <div className="flex items-center gap-1.5 text-xs text-rose-400">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{importError}</span>
+                </div>
+              )}
+
+              {importJsonText.trim() && (
+                <button
+                  type="button"
+                  onClick={() => handleImportJson(importJsonText)}
+                  className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl transition-colors shadow-md shadow-emerald-600/20"
+                >
+                  Import Pasted Projects
+                </button>
+              )}
+            </div>
+
+            {/* Reset to official build */}
+            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
+              <span className="text-slate-500">Need to reload standard deliverables?</span>
+              <button
+                type="button"
+                onClick={handleResetToOfficial}
+                className="text-slate-400 hover:text-amber-400 transition-colors flex items-center gap-1 cursor-pointer font-medium"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Reset to Official 6 Projects
               </button>
             </div>
           </div>
