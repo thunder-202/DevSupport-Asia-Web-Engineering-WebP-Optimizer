@@ -38,7 +38,8 @@ import {
 import darkInfraBg from '@/src/assets/images/dark_infra_bg_1793338562027.jpg';
 import realUserFace from '@/src/assets/images/real_user_face_centered.png';
 import { PortfolioItem, INITIAL_PORTFOLIO_ITEMS } from '@/src/data/projectsData';
-import { normalizeGithubUrl, getGithubDisplay } from '@/src/utils/github';
+import { normalizeGithubUrl, getGithubDisplay, normalizeWebUrl } from '@/src/utils/github';
+import PortfolioShowcaseGrid from '@/src/components/PortfolioShowcaseGrid';
 
 export type { PortfolioItem };
 
@@ -72,6 +73,7 @@ export default function App() {
   const [projectTitle, setProjectTitle] = useState<string>('');
   const [projectCategory, setProjectCategory] = useState<string>('Restaurants');
   const [projectGithubUrl, setProjectGithubUrl] = useState<string>('');
+  const [projectLiveUrl, setProjectLiveUrl] = useState<string>('');
   const [projectDescription, setProjectDescription] = useState<string>('');
 
   // Portfolio & Filter States - Guaranteed to persist across deployments
@@ -266,13 +268,15 @@ export default function App() {
     }
 
     const title = projectTitle.trim() || `Optimized Project #${portfolioItems.length + 1}`;
-    const safeGithubUrl = normalizeGithubUrl(projectGithubUrl.trim() || 'https://github.com/nayem1816');
+    const safeGithubUrl = projectGithubUrl.trim() ? normalizeGithubUrl(projectGithubUrl.trim()) : undefined;
+    const safeLiveUrl = projectLiveUrl.trim() ? normalizeWebUrl(projectLiveUrl.trim()) : undefined;
     const newItem: PortfolioItem = {
       id: Date.now(),
       title,
       category: projectCategory,
       description: projectDescription.trim(),
       githubUrl: safeGithubUrl,
+      liveUrl: safeLiveUrl,
       dataUrl: webpDataUrl,
       date: new Date().toISOString().split('T')[0],
       sizeKb: webpSizeKb,
@@ -282,6 +286,7 @@ export default function App() {
     setPortfolioItems((prev) => [newItem, ...prev]);
     setProjectTitle('');
     setProjectGithubUrl('');
+    setProjectLiveUrl('');
     setProjectDescription('');
     showToast(`Saved "${title}" to My Previous Work!`);
 
@@ -324,7 +329,8 @@ export default function App() {
         title: String(item.title || `Project #${idx + 1}`),
         category: String(item.category || 'Custom Web'),
         description: item.description ? String(item.description) : '',
-        githubUrl: item.githubUrl ? normalizeGithubUrl(String(item.githubUrl)) : 'https://github.com/nayem1816',
+        githubUrl: item.githubUrl ? normalizeGithubUrl(String(item.githubUrl)) : undefined,
+        liveUrl: item.liveUrl ? normalizeWebUrl(String(item.liveUrl)) : undefined,
         dataUrl: String(item.dataUrl || ''),
         date: String(item.date || new Date().toISOString().split('T')[0]),
         sizeKb: String(item.sizeKb || '50.0'),
@@ -1156,6 +1162,38 @@ export default function App() {
                           </div>
                         )}
                       </div>
+
+                      {/* Live Demo URL (Optional) */}
+                      <div className="space-y-1.5">
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                            <Globe className="w-3.5 h-3.5" />
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="Live Demo URL (Optional, e.g. https://e-shop-demo.devsupport.asia)"
+                            value={projectLiveUrl}
+                            onChange={(e) => setProjectLiveUrl(e.target.value)}
+                            className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-500 font-mono"
+                          />
+                        </div>
+                        {projectLiveUrl.trim() && (
+                          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-950/90 border border-emerald-500/30 text-[11px]">
+                            <span className="text-slate-400 truncate font-mono">
+                              Live Site: <span className="text-emerald-300">{normalizeWebUrl(projectLiveUrl)}</span>
+                            </span>
+                            <a
+                              href={normalizeWebUrl(projectLiveUrl)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-emerald-400 hover:text-white font-semibold flex items-center gap-1 shrink-0 ml-2"
+                            >
+                              Test Live ↗
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
                       <textarea
                         placeholder="Project Description (e.g. Ultra-fast loading hero visual with 75% file compression and smooth responsive rendering)"
                         value={projectDescription}
@@ -1165,7 +1203,7 @@ export default function App() {
                       />
                       <button
                         type="submit"
-                        className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md shadow-emerald-700/20"
+                        className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md shadow-emerald-700/20 cursor-pointer"
                       >
                         <Bookmark className="w-3.5 h-3.5" />
                         Save to My Previous Work
@@ -1190,186 +1228,16 @@ export default function App() {
           </div>
         </section>
 
-        {/* My Previous Work Section (Category Gallery & Password Delete) */}
-        <section id="portfolio" className="py-20 bg-slate-900/50 border-t border-slate-800/80 scroll-mt-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-8">
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
-                Production Portfolio
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mt-3">My Previous Work</h2>
-              <p className="text-slate-400 mt-2 text-sm sm:text-base">
-                Client engineering deliverables and verified WebP optimizations with direct GitHub repositories.
-              </p>
-
-              {/* Deployment status & backup manager action */}
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300 shadow-sm">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>
-                    <strong className="text-white">{portfolioItems.length} Projects</strong> Live Across Deployments
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setBackupModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white border border-indigo-500/30 text-xs font-semibold transition-all shadow-sm cursor-pointer"
-                >
-                  <Database className="w-3.5 h-3.5 text-indigo-400" />
-                  Backup &amp; Export Data
-                </button>
-              </div>
-            </div>
-
-            {/* Category Filter Tabs */}
-            <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
-              {CATEGORIES.map((cat) => {
-                const isActive = activeCategory === cat;
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
-                      isActive
-                        ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/30'
-                        : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700 hover:bg-slate-850'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Gallery Grid */}
-            {filteredItems.length === 0 ? (
-              <div className="py-16 text-center glass-card rounded-2xl max-w-xl mx-auto border border-slate-800">
-                <Layers className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-                <p className="text-sm font-medium text-slate-300">
-                  No previous work found under &ldquo;{activeCategory}&rdquo;.
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Upload and convert an image using the tool above and click &ldquo;Save to My Previous Work&rdquo;.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="glass-card rounded-xl overflow-hidden border border-slate-800 hover:border-slate-700 group relative flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-lg"
-                  >
-                    <div>
-                      {/* Image Preview & Click to Open Big Window */}
-                      <div
-                        onClick={() => setLightboxItem(item)}
-                        className="h-52 bg-slate-950 overflow-hidden relative border-b border-slate-800/80 cursor-pointer group/img"
-                        title="Click to view in big window"
-                      >
-                        <img
-                          src={item.dataUrl}
-                          alt={item.title}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        {/* Hover Overlay Hint */}
-                        <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                          <span className="px-3 py-1.5 rounded-xl bg-slate-900/95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xl border border-indigo-500/30 backdrop-blur-sm">
-                            <Maximize2 className="w-3.5 h-3.5 text-indigo-400" />
-                            View in Big Window
-                          </span>
-                        </div>
-
-                        {/* Delete Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            promptDelete(item.id);
-                          }}
-                          title="Delete with admin password"
-                          className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white flex items-center justify-center text-xs transition-colors shadow-lg backdrop-blur-sm z-10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        {item.sizeKb && (
-                          <span className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-md px-2 py-0.5 rounded text-[11px] font-mono text-emerald-400 border border-slate-800">
-                            {item.sizeKb} KB
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="p-5">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
-                            {item.category}
-                          </span>
-                          {item.isPermanent && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
-                              <CheckCircle2 className="w-2.5 h-2.5" />
-                              Deployed Build
-                            </span>
-                          )}
-                        </div>
-                        <h3
-                          onClick={() => setLightboxItem(item)}
-                          className="text-base font-bold text-white mt-2 leading-snug cursor-pointer hover:text-indigo-400 transition-colors"
-                          title="Click to view in big window"
-                        >
-                          {item.title}
-                        </h3>
-                        {item.description && (
-                          <p className="text-xs text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">
-                            {item.description}
-                          </p>
-                        )}
-
-                        {/* GitHub Repository Link Box */}
-                        {item.githubUrl ? (
-                          <a
-                            href={normalizeGithubUrl(item.githubUrl)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="mt-3.5 flex items-center justify-between px-3 py-2 rounded-lg bg-slate-950/90 border border-slate-800 hover:border-indigo-500/60 text-xs transition-all group/repo shadow-inner"
-                            title="Open GitHub repository in new tab"
-                          >
-                            <span className="flex items-center gap-2 truncate">
-                              <GithubIcon className="w-3.5 h-3.5 text-slate-400 group-hover/repo:text-white shrink-0" />
-                              <span className="truncate font-mono text-[11px] text-indigo-300 group-hover/repo:text-indigo-200">
-                                {getGithubDisplay(item.githubUrl)}
-                              </span>
-                            </span>
-                            <ExternalLink className="w-3 h-3 text-slate-500 group-hover/repo:text-white shrink-0 ml-1.5" />
-                          </a>
-                        ) : (
-                          <div className="mt-3.5 flex items-center px-3 py-1.5 rounded-lg bg-slate-950/40 border border-slate-800/60 text-[11px] text-slate-500 font-mono">
-                            <span className="flex items-center gap-1.5 truncate">
-                              <GithubIcon className="w-3.5 h-3.5 opacity-40 shrink-0" />
-                              <span className="italic">No GitHub repo</span>
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="p-5 pt-0">
-                      <button
-                        type="button"
-                        onClick={() => setLightboxItem(item)}
-                        className="w-full py-2.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white text-xs font-semibold text-center transition-colors flex items-center justify-center gap-1.5 border border-indigo-500/30"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        View Project
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
+        {/* Dynamic Portfolio Showcase Grid Component */}
+        <PortfolioShowcaseGrid
+          items={portfolioItems}
+          categories={CATEGORIES}
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+          onViewItem={setLightboxItem}
+          onDeleteItem={promptDelete}
+          onOpenBackupModal={() => setBackupModalOpen(true)}
+        />
 
         {/* Contact Section */}
         <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto scroll-mt-16">
@@ -1658,8 +1526,38 @@ export default function App() {
               </div>
             )}
 
-            {/* Modal GitHub Repository Showcase */}
-            {lightboxItem.githubUrl && (
+            {/* Modal Live Demonstration Link */}
+            {lightboxItem.liveUrl && (
+              <div className="px-4 sm:px-6 py-3 bg-slate-950 border-t border-slate-800/90 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 shadow-sm">
+                    <Globe className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Live Project Demonstration
+                    </div>
+                    <div className="text-xs font-mono text-emerald-300 truncate">
+                      {normalizeWebUrl(lightboxItem.liveUrl)}
+                    </div>
+                  </div>
+                </div>
+                <a
+                  href={normalizeWebUrl(lightboxItem.liveUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 border border-emerald-500/30 shrink-0 transition-colors"
+                  title="Open live website in new tab"
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>Visit Live Site</span>
+                  <ExternalLink className="w-3 h-3 ml-0.5" />
+                </a>
+              </div>
+            )}
+
+            {/* Modal GitHub Repository Showcase with Fallback */}
+            {lightboxItem.githubUrl ? (
               <div className="px-4 sm:px-6 py-3 bg-slate-950 border-t border-slate-800/90 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 text-indigo-400 flex items-center justify-center shrink-0 shadow-sm">
@@ -1679,11 +1577,31 @@ export default function App() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 border border-indigo-500/30 shrink-0 transition-colors"
+                  title="Open GitHub repository in new tab"
                 >
                   <GithubIcon className="w-3.5 h-3.5" />
                   <span>Open Repo</span>
                   <ExternalLink className="w-3 h-3 ml-0.5" />
                 </a>
+              </div>
+            ) : (
+              <div className="px-4 sm:px-6 py-3 bg-slate-950/80 border-t border-slate-800/90 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 text-slate-500 flex items-center justify-center shrink-0 shadow-sm">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Source Code
+                    </div>
+                    <div className="text-xs text-slate-400 font-mono">
+                      Repository Private (Proprietary / Client Protected)
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400">
+                  Private
+                </span>
               </div>
             )}
 

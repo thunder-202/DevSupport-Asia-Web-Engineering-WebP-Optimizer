@@ -29,7 +29,22 @@ export function normalizeGithubUrl(rawUrl?: string): string {
  * Returns a clean, readable display label for a GitHub URL.
  */
 export function getGithubDisplay(url?: string): string {
-  if (!url) return 'github.com';
+  if (!url) return '';
   const clean = url.trim();
   return clean.replace(/^https?:\/\/(www\.)?github\.com\/?/i, 'github.com/');
+}
+
+/**
+ * Normalizes any live project URL to ensure it has https:// and does not resolve relatively.
+ */
+export function normalizeWebUrl(rawUrl?: string): string {
+  if (!rawUrl) return '';
+  let url = rawUrl.trim();
+  if (!url) return '';
+  url = url.replace(/^["'`]|["'`]$/g, '').trim();
+  if (!url) return '';
+  if (url.startsWith('https://') || url.startsWith('http://')) {
+    return url;
+  }
+  return `https://${url}`;
 }
