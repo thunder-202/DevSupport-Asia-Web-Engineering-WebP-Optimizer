@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevSupport Asia | Web Engineering & Infrastructure</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 glass-card border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-brand-500/20">
+                    DS
+                </div>
+                <div>
+                    <span class="text-lg font-bold tracking-tight text-white">devsupport<span class="text-brand-500">.asia</span></span>
+                    <span class="block text-xs text-slate-400">Web Engineering Services</span>
+                </div>
+            </div>
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-300">
+                <a href="#about" class="hover:text-brand-500 transition-colors">About</a>
+                <a href="#services" class="hover:text-brand-500 transition-colors">Services</a>
+                <a href="#portfolio" class="hover:text-brand-500 transition-colors">Portfolio</a>
+                <a href="#converter" class="hover:text-brand-500 transition-colors flex items-center gap-2 text-brand-400 font-semibold">
+                    <i class="fa-solid fa-bolt text-xs"></i> WebP Converter
+                </a>
+                <a href="#contact" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold shadow-md transition-all">
+                    Contact Us
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Stream -->
+    <main class="flex-grow">
+        
+        <!-- Hero Section -->
+        <section id="about" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-semibold">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>Available for New Projects</span>
+                    </div>
+                    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                        High-Performance Web Solutions & Custom Infrastructure
+                    </h1>
+                    <p class="text-lg text-slate-400 leading-relaxed">
+                        We build fast, secure, and compliance-ready web applications for businesses across Asia and globally. From modern responsive frontend design to lightweight image optimization pipelines.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 pt-2">
+                        <a href="#converter" class="px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-center shadow-lg shadow-brand-500/25 transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Try WebP Optimizer
+                        </a>
+                        <a href="#services" class="px-6 py-3 rounded-xl glass-card hover:bg-slate-800 text-slate-200 font-semibold text-center transition-all border border-slate-700">
+                            Explore Pricing
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Feature Card / Stats -->
+                <div class="glass-card rounded-2xl p-6 sm:p-8 border border-slate-800 relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-brand-500"></i> Client Commitment
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4 p-3 rounded-xl bg-slate-900/50 border border-slate-800">
+                            <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-check"></i></div>
+                            <div>
+                                <h4 class="font-semibold text-sm text-slate-200">99.9% Server Uptime Guarantee</h4>
+                                <p class="text-xs text-slate-400">Managed cloud hosting infrastructure hosted on global CDN networks.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-3 rounded-xl bg-slate-900/50 border border-slate-800">
+                            <div class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400"><i class="fa-solid fa-gauge-high"></i></div>
+                            <div>
+                                <h4 class="font-semibold text-sm text-slate-200">Lightweight & Fast Load Times</h4>
+                                <p class="text-xs text-slate-400">Built using modern WebP formats and clean, asset-optimized code structures.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services & Pricing -->
+        <section id="services" class="py-16 bg-slate-900/50 border-y border-slate-800/80">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-12">
+                    <h2 class="text-3xl font-bold text-white">Transparent Service Pricing</h2>
+                    <p class="text-slate-400 mt-2">Turnkey web development and maintenance packages crafted for high reliability.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <!-- Pricing Card 1 -->
+                    <div class="glass-card rounded-2xl p-8 border border-slate-800 relative hover:border-slate-700 transition-all">
+                        <div class="text-xs font-semibold text-brand-400 uppercase tracking-wider mb-2">Development</div>
+                        <h3 class="text-2xl font-bold text-white">Website Build</h3>
+                        <div class="my-4 flex items-baseline">
+                            <span class="text-4xl font-extrabold text-white">$500</span>
+                            <span class="text-slate-400 ml-2">/ one-time</span>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-6">Complete customized single-page or multi-page website design tailored to your corporate standards.</p>
+                        <ul class="space-y-3 text-sm text-slate-300 mb-8">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> Fully Responsive Single-Page Architecture</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> Optimized Images & Fast Page Speed</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> Domain Setup & DNS Configuration</li>
+                        </ul>
+                    </div>
+
+                    <!-- Pricing Card 2 -->
+                    <div class="glass-card rounded-2xl p-8 border border-brand-500/50 relative hover:border-brand-500 transition-all bg-gradient-to-b from-brand-950/20 to-slate-900/80">
+                        <div class="absolute -top-3 right-6 px-3 py-1 bg-brand-600 text-white text-xs font-bold rounded-full">POPULAR</div>
+                        <div class="text-xs font-semibold text-brand-400 uppercase tracking-wider mb-2">Operations</div>
+                        <h3 class="text-2xl font-bold text-white">Managed Hosting & Support</h3>
+                        <div class="my-4 flex items-baseline">
+                            <span class="text-4xl font-extrabold text-white">$70</span>
+                            <span class="text-slate-400 ml-2">/ month</span>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-6">Continuous hosting, SSL maintenance, DNS health monitoring, and minor updates included.</p>
+                        <ul class="space-y-3 text-sm text-slate-300 mb-8">
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> Enterprise Hosting & SSL Certificates</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> DNS Record Management & Verification Support</li>
+                            <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-400"></i> 24/7 Uptime Monitoring</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Image Converter Section -->
+        <section id="converter" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-10">
+                <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider">Instant Utility Tool</span>
+                <h2 class="text-3xl font-bold text-white mt-3">Live Client-Side WebP Converter</h2>
+                <p class="text-slate-400 mt-2">Upload any local JPG or PNG file. It is converted to WebP locally in your browser using the HTML5 Canvas API—generating short Blob URLs and WebP Data URLs.</p>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-2xl">
+                <!-- Dropzone -->
+                <div id="dropzone" class="border-2 border-dashed border-slate-700 hover:border-brand-500 rounded-xl p-8 text-center cursor-pointer transition-colors bg-slate-900/40">
+                    <input type="file" id="imageInput" accept="image/jpeg, image/png" class="hidden">
+                    <div class="space-y-4">
+                        <div class="w-16 h-16 rounded-full bg-brand-500/10 text-brand-400 flex items-center justify-center mx-auto text-2xl">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <div>
+                            <p class="text-base font-medium text-slate-200">Click to upload or drag & drop JPG / PNG</p>
+                            <p class="text-xs text-slate-500 mt-1">Files are processed 100% locally in your browser</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compression Quality Slider -->
+                <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                    <label for="qualityRange" class="text-sm font-medium text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-brand-400"></i> WebP Compression Quality: <span id="qualityVal" class="text-brand-400 font-bold">85%</span>
+                    </label>
+                    <input type="range" id="qualityRange" min="10" max="100" value="85" class="w-full sm:w-64 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-500">
+                </div>
+
+                <!-- Conversion Output Container -->
+                <div id="outputContainer" class="hidden mt-8 space-y-6">
+                    <hr class="border-slate-800">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                        <!-- Preview Box -->
+                        <div class="space-y-2">
+                            <span class="text-xs font-semibold text-slate-400 uppercase">Image Preview (WebP)</span>
+                            <div class="rounded-xl border border-slate-800 bg-slate-950 p-2 flex items-center justify-center overflow-hidden min-h-[200px]">
+                                <img id="webpPreview" src="" alt="WebP Output" class="max-h-64 object-contain rounded-lg">
+                            </div>
+                            <div id="fileStats" class="text-xs text-slate-400 flex justify-between px-1">
+                                <span>Original: <strong id="origSize" class="text-slate-300">0 KB</strong></span>
+                                <span>Converted WebP: <strong id="webpSize" class="text-emerald-400">0 KB</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Data Output, Save Form & Download Options -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs font-semibold text-slate-400 uppercase block mb-1">Shortened Blob URL (Browser Memory Link)</label>
+                                <input id="blobUrlText" type="text" readonly class="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-brand-400 focus:outline-none mb-3" />
+
+                                <label class="text-xs font-semibold text-slate-400 uppercase block mb-1">Base64 Data URL (Full Image Code)</label>
+                                <textarea id="dataUrlText" readonly class="w-full h-20 p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-emerald-400 focus:outline-none resize-none"></textarea>
+                            </div>
+
+                            <!-- Save to Portfolio Form -->
+                            <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
+                                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Save To "My Previous Work"</h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <input type="text" id="projectTitle" placeholder="Project Title (e.g. Cafe Hero)" class="px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-brand-500">
+                                    <select id="projectCategory" class="px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-brand-500">
+                                        <option value="Restaurants">Restaurants</option>
+                                        <option value="Cafes">Cafes</option>
+                                        <option value="E-commerce">E-commerce</option>
+                                        <option value="Real Estate">Real Estate</option>
+                                        <option value="Custom Web">Custom Web</option>
+                                    </select>
+                                </div>
+                                <button onclick="saveToPortfolio()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-bookmark"></i> Save to My Previous Work
+                                </button>
+                            </div>
+
+                            <div class="flex flex-wrap gap-3">
+                                <button id="copyUrlBtn" onclick="copyToClipboard('blobUrlText')" class="flex-1 px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors border border-slate-700">
+                                    <i class="fa-regular fa-copy"></i> Copy Short URL
+                                </button>
+                                <a id="downloadBtn" download="optimized-image.webp" href="#" class="flex-1 px-4 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors">
+                                    <i class="fa-solid fa-download"></i> Download WebP
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Previous Work Section (Category Gallery & Password Delete) -->
+        <section id="previous-work" class="py-16 bg-slate-900/50 border-t border-slate-800/80">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-8">
+                    <h2 class="text-3xl font-bold text-white">My Previous Work</h2>
+                    <p class="text-slate-400 mt-2">Saved WebP conversions organized by project categories.</p>
+                </div>
+
+                <!-- Category Filters -->
+                <div class="flex flex-wrap items-center justify-center gap-2 mb-10" id="categoryFilters">
+                    <button onclick="filterPortfolio('All')" class="category-btn active border px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-brand-600 text-white border-brand-500">All</button>
+                    <button onclick="filterPortfolio('Restaurants')" class="category-btn border px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Restaurants</button>
+                    <button onclick="filterPortfolio('Cafes')" class="category-btn border px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Cafes</button>
+                    <button onclick="filterPortfolio('E-commerce')" class="category-btn border px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">E-commerce</button>
+                    <button onclick="filterPortfolio('Real Estate')" class="category-btn border px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Real Estate</button>
+                    <button onclick="filterPortfolio('Custom Web')" class="category-btn border px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">Custom Web</button>
+                </div>
+
+                <!-- Gallery Container -->
+                <div id="portfolioGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Dynamic Items render here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+            <div class="glass-card rounded-2xl p-8 sm:p-12 border border-slate-800 text-center relative">
+                <h2 class="text-3xl font-bold text-white">Start Your Web Project</h2>
+                <p class="text-slate-400 mt-2 max-w-xl mx-auto">Ready to deploy your public portfolio or optimize your current web infrastructure? Get in touch with us today.</p>
+                
+                <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6">
+                    <a href="mailto:support@devsupport.asia" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold transition-all">
+                        <i class="fa-regular fa-envelope"></i> Email: support@devsupport.asia
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-8 text-center text-xs text-slate-500 glass-card">
+        <p>&copy; 2026 devsupport.asia. All rights reserved. Professional Web Engineering Services.</p>
+    </footer>
+
+    <!-- Password Delete Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card rounded-2xl p-6 max-w-sm w-full border border-slate-800 space-y-4">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-lock text-rose-500"></i> Password Required
+            </h3>
+            <p class="text-xs text-slate-400">Enter administrator password to delete this item from your portfolio.</p>
+            <input type="password" id="deletePassword" placeholder="Enter Password" class="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-rose-500">
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold">Cancel</button>
+                <button onclick="confirmDelete()" class="flex-1 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-semibold">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas for Image Conversion -->
+    <canvas id="conversionCanvas" class="hidden"></canvas>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 hidden px-4 py-3 rounded-xl bg-brand-600 text-white text-xs font-semibold shadow-2xl border border-brand-400 z-50">
+        <span id="toastMsg">Action completed successfully!</span>
+    </div>
+
+    <!-- WebP Converter & Page Scripting -->
+    <script>
+        // File Dropzone & Converter Elements
+        const dropzone = document.getElementById('dropzone');
+        const imageInput = document.getElementById('imageInput');
+        const qualityRange = document.getElementById('qualityRange');
+        const qualityVal = document.getElementById('qualityVal');
+        const outputContainer = document.getElementById('outputContainer');
+        const webpPreview = document.getElementById('webpPreview');
+        const dataUrlText = document.getElementById('dataUrlText');
+        const blobUrlText = document.getElementById('blobUrlText');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const origSizeEl = document.getElementById('origSize');
+        const webpSizeEl = document.getElementById('webpSize');
+        const canvas = document.getElementById('conversionCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let currentFile = null;
+        let currentWebpDataUrl = '';
+        let currentBlobUrl = '';
+        let currentCategoryFilter = 'All';
+        let itemToDeleteId = null;
+
+        // Portfolio LocalStorage Array
+        let portfolioItems = JSON.parse(localStorage.getItem('my_portfolio_items') || '[]');
+
+        window.onload = function() {
+            renderPortfolio();
+        };
+
+        // Quality Slider Event
+        qualityRange.addEventListener('input', (e) => {
+            qualityVal.textContent = `${e.target.value}%`;
+            if (currentFile) {
+                processImage(currentFile);
+            }
+        });
+
+        // Dropzone Interaction
+        dropzone.addEventListener('click', () => imageInput.click());
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('border-brand-500', 'bg-slate-900/80');
+        });
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('border-brand-500', 'bg-slate-900/80');
+        });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-brand-500', 'bg-slate-900/80');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (!file.type.match('image/jpeg') && !file.type.match('image/png')) {
+                showToast('Please select a JPG or PNG file.');
+                return;
+            }
+            currentFile = file;
+            processImage(file);
+        }
+
+        // Core HTML5 Canvas WebP Conversion Algorithm
+        function processImage(file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+
+                    const quality = qualityRange.value / 100;
+                    currentWebpDataUrl = canvas.toDataURL('image/webp', quality);
+
+                    // Generate Shortened Blob URL alongside Base64 Data URL
+                    canvas.toBlob((blob) => {
+                        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+                        currentBlobUrl = URL.createObjectURL(blob);
+                        blobUrlText.value = currentBlobUrl;
+                    }, 'image/webp', quality);
+
+                    webpPreview.src = currentWebpDataUrl;
+                    dataUrlText.value = currentWebpDataUrl;
+                    downloadBtn.href = currentWebpDataUrl;
+
+                    const origSizeKb = (file.size / 1024).toFixed(1);
+                    const head = 'data:image/webp;base64,';
+                    const webpSizeBytes = Math.round((currentWebpDataUrl.length - head.length) * 3 / 4);
+                    const webpSizeKb = (webpSizeBytes / 1024).toFixed(1);
+
+                    origSizeEl.textContent = `${origSizeKb} KB`;
+                    webpSizeEl.textContent = `${webpSizeKb} KB`;
+
+                    outputContainer.classList.remove('hidden');
+                    showToast('Converted to WebP successfully!');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Save Item to Portfolio
+        function saveToPortfolio() {
+            const titleInput = document.getElementById('projectTitle').value.trim() || 'Untitled Project';
+            const categoryInput = document.getElementById('projectCategory').value;
+
+            if (!currentWebpDataUrl) {
+                showToast('Please convert an image first.');
+                return;
+            }
+
+            const newItem = {
+                id: Date.now(),
+                title: titleInput,
+                category: categoryInput,
+                dataUrl: currentWebpDataUrl,
+                date: new Date().toLocaleDateString()
+            };
+
+            portfolioItems.unshift(newItem);
+            localStorage.setItem('my_portfolio_items', JSON.stringify(portfolioItems));
+            
+            document.getElementById('projectTitle').value = '';
+            showToast('Saved to "My Previous Work"!');
+            renderPortfolio();
+        }
+
+        // Render Portfolio Grid
+        function renderPortfolio() {
+            const grid = document.getElementById('portfolioGrid');
+            grid.innerHTML = '';
+
+            const filtered = currentCategoryFilter === 'All' 
+                ? portfolioItems 
+                : portfolioItems.filter(item => item.category === currentCategoryFilter);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-500 text-sm">
+                        No previous work found under "${currentCategoryFilter}". Upload and save an image above to add items here.
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "glass-card rounded-xl overflow-hidden border border-slate-800 group relative flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="h-48 bg-slate-950 overflow-hidden relative border-b border-slate-800/80">
+                            <img src="${item.dataUrl}" alt="${item.title}" class="w-full h-full object-cover">
+                            <button onclick="promptDelete(${item.id})" class="absolute top-3 right-3 w-8 h-8 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white flex items-center justify-center text-xs transition-colors shadow-lg">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="p-5">
+                            <span class="text-xs font-semibold text-brand-400">${item.category}</span>
+                            <h3 class="text-base font-bold text-white mt-1">${item.title}</h3>
+                            <p class="text-xs text-slate-500 mt-1">Added on ${item.date}</p>
+                        </div>
+                    </div>
+                    <div class="p-5 pt-0 flex gap-2">
+                        <a href="${item.dataUrl}" download="${item.title.toLowerCase().replace(/\s+/g, '-')}.webp" class="flex-1 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold text-center transition-colors">
+                            Download
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Category Filtering
+        function filterPortfolio(category) {
+            currentCategoryFilter = category;
+            const buttons = document.querySelectorAll('.category-btn');
+            buttons.forEach(btn => {
+                if (btn.textContent.trim() === category) {
+                    btn.className = "category-btn active border px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-brand-600 text-white border-brand-500";
+                } else {
+                    btn.className = "category-btn border px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700";
+                }
+            });
+            renderPortfolio();
+        }
+
+        // Delete Password Verification Modal
+        function promptDelete(id) {
+            itemToDeleteId = id;
+            document.getElementById('deletePassword').value = '';
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            itemToDeleteId = null;
+        }
+
+        function confirmDelete() {
+            const password = document.getElementById('deletePassword').value;
+            if (password === 'Nay#-%"(202)!') {
+                portfolioItems = portfolioItems.filter(item => item.id !== itemToDeleteId);
+                localStorage.setItem('my_portfolio_items', JSON.stringify(portfolioItems));
+                closeDeleteModal();
+                renderPortfolio();
+                showToast('Item deleted successfully.');
+            } else {
+                showToast('Incorrect password!');
+            }
+        }
+
+        // Clipboard Helper
+        function copyToClipboard(elementId) {
+            const copyText = document.getElementById(elementId);
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            try {
+                document.execCommand('copy');
+                showToast('Copied to clipboard!');
+            } catch (err) {
+                showToast('Failed to copy text.');
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
