@@ -33,7 +33,8 @@ import {
   Upload,
   RefreshCw,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  MapPin
 } from 'lucide-react';
 import darkInfraBg from '@/src/assets/images/dark_infra_bg_1793338562027.jpg';
 import realUserFace from '@/src/assets/images/real_user_face_centered.png';
@@ -107,11 +108,15 @@ export default function App() {
   });
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
-  // Password Modal
+  // Password Modals (Delete & Save)
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
   const [itemToDeleteId, setItemToDeleteId] = useState<number | null>(null);
   const [deletePassword, setDeletePassword] = useState<string>('');
   const [deleteError, setDeleteError] = useState<string>('');
+
+  const [saveModalOpen, setSaveModalOpen] = useState<boolean>(false);
+  const [savePassword, setSavePassword] = useState<string>('');
+  const [saveError, setSaveError] = useState<string>('');
 
   // Deployment & Backup Modal
   const [backupModalOpen, setBackupModalOpen] = useState<boolean>(false);
@@ -144,6 +149,7 @@ export default function App() {
       if (e.key === 'Escape') {
         setLightboxItem(null);
         setDeleteModalOpen(false);
+        setSaveModalOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -254,10 +260,22 @@ export default function App() {
     );
   };
 
+  const ADMIN_PASSWORD = 'Nay#-%"(202)!';
+
   const handleSaveToPortfolio = (e: React.FormEvent) => {
     e.preventDefault();
     if (!webpDataUrl) {
       showToast('Please convert an image first.');
+      return;
+    }
+    setSavePassword('');
+    setSaveError('');
+    setSaveModalOpen(true);
+  };
+
+  const confirmSaveToPortfolio = () => {
+    if (savePassword !== ADMIN_PASSWORD) {
+      setSaveError('Incorrect password! Please enter the correct administrator password.');
       return;
     }
 
@@ -282,6 +300,8 @@ export default function App() {
     setProjectGithubUrl('');
     setProjectLiveUrl('');
     setProjectDescription('');
+    setSaveModalOpen(false);
+    setSavePassword('');
     showToast(`Saved "${title}" to My Previous Work!`);
 
     // Smooth scroll to portfolio section
@@ -381,7 +401,7 @@ export default function App() {
     setDeleteModalOpen(true);
   };
 
-  const ADMIN_DELETE_PASSWORD = 'Nay#-%"(202)!';
+  const ADMIN_DELETE_PASSWORD = ADMIN_PASSWORD;
 
   const confirmDelete = () => {
     if (deletePassword === ADMIN_DELETE_PASSWORD) {
@@ -946,24 +966,13 @@ export default function App() {
                     Files are processed 100% locally in your browser. No files are uploaded to any server.
                   </p>
                 </div>
-                <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      fileInputRef.current?.click();
-                    }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-all cursor-pointer"
-                  >
-                    <ImagePlus className="w-4 h-4" />
-                    Add new Image
-                  </button>
-                  {currentFile && (
+                {currentFile && (
+                  <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                     <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-800 text-xs text-indigo-300 font-mono border border-slate-700/60">
                       Loaded: {currentFile.name}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1035,16 +1044,6 @@ export default function App() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full py-2 px-3 rounded-lg bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 hover:text-white border border-slate-800 hover:border-indigo-500/40 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm group"
-                      >
-                        <ImagePlus className="w-3.5 h-3.5 text-indigo-400 group-hover:scale-110 transition-transform" />
-                        Add new Image
-                      </button>
-                    </div>
                     <div className="text-xs text-slate-400 flex justify-between px-1 bg-slate-900/60 p-3 rounded-lg border border-slate-800">
                       <span>
                         Original File: <strong className="text-slate-200">{origSizeKb} KB</strong>
@@ -1080,27 +1079,7 @@ export default function App() {
                         type="text"
                         readOnly
                         value={blobUrl}
-                        className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-indigo-300 focus:outline-none mb-3"
-                      />
-
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="text-xs font-semibold text-slate-400 uppercase">
-                          Base64 Data URL (Full Image Code)
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => copyText(webpDataUrl, 'Data URL')}
-                          className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-medium"
-                        >
-                          {copiedKey === 'Data URL' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                          Copy Base64
-                        </button>
-                      </div>
-                      <textarea
-                        readOnly
-                        value={webpDataUrl}
-                        rows={3}
-                        className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-emerald-400 focus:outline-none resize-none leading-relaxed"
+                        className="w-full p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-indigo-300 focus:outline-none"
                       />
                     </div>
 
@@ -1204,8 +1183,8 @@ export default function App() {
                         type="submit"
                         className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md shadow-emerald-700/20 cursor-pointer"
                       >
-                        <Bookmark className="w-3.5 h-3.5" />
-                        Save to My Previous Work
+                        <Lock className="w-3.5 h-3.5" />
+                        <span>Save to My Previous Work (Password Protected)</span>
                       </button>
                     </form>
 
@@ -1297,7 +1276,10 @@ export default function App() {
                   <div className="mt-5 space-y-1">
                     <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">MD Nayem Hosen</h3>
                     <p className="text-xs sm:text-sm text-indigo-400 font-semibold">Lead Web Engineer &amp; Infrastructure Specialist</p>
-                    <p className="text-xs text-slate-400">DevSupport Asia &bull; Asia &amp; Global Operations</p>
+                    <p className="text-xs text-slate-400 flex items-center justify-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                      <span>Chandana Chourasta, Gajipur Mahanagar, Gajipur, Dhaka 1702</span>
+                    </p>
                   </div>
                 </div>
 
@@ -1408,6 +1390,46 @@ export default function App() {
                     </div>
                   </div>
 
+                  {/* Location Channel */}
+                  <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-rose-500/50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 group">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center shrink-0 border border-rose-500/20 group-hover:scale-105 transition-transform">
+                        <MapPin className="w-5 h-5 text-rose-400" />
+                      </div>
+                      <div className="overflow-hidden">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-rose-400">
+                          Office / Workstation Location
+                        </span>
+                        <p className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                          Chandana Chourasta, Gajipur Mahanagar, Gajipur, Dhaka 1702
+                        </p>
+                        <p className="text-[11px] text-slate-400">
+                          Dhaka Division, Bangladesh &bull; In-Person Consultations &amp; Global Remote
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+                      <a
+                        href="https://www.google.com/maps/search/?api=1&query=Chandana+Chourasta,+Gazipur,+Dhaka+1702"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-rose-600/30 transition-all whitespace-nowrap"
+                        title="Open location on Google Maps"
+                      >
+                        <MapPin className="w-3.5 h-3.5" />
+                        View Map
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => copyText('Chandana Chourasta, Gajipur Mahanagar, Gajipur, Dhaka 1702', 'Location Address')}
+                        className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                        title="Copy Location Address"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Commitment Badges */}
                   <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-400">
                     <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center gap-2">
@@ -1424,6 +1446,11 @@ export default function App() {
 
               {/* Bottom links */}
               <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+                <span className="text-xs text-slate-400 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-rose-400" />
+                  Chandana Chourasta, Gajipur Mahanagar, Gajipur, Dhaka 1702
+                </span>
+                <span className="text-slate-700 hidden sm:inline">&bull;</span>
                 <a
                   href="mailto:support@devsupport.asia"
                   className="text-xs text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-1.5"
@@ -1651,8 +1678,7 @@ export default function App() {
             </div>
 
             <p className="text-xs text-slate-400 leading-relaxed">
-              Enter administrator password (<span className="font-mono text-slate-300">Nay#-%&quot;(202)!</span>) to delete this item
-              from your portfolio.
+              Enter administrator password to delete this item from your portfolio.
             </p>
 
             <div>
@@ -1687,6 +1713,67 @@ export default function App() {
                 className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-semibold transition-colors shadow-lg shadow-rose-600/30"
               >
                 Delete Item
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Password Save Modal */}
+      {saveModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="glass-card rounded-2xl p-6 max-w-sm w-full border border-slate-800 space-y-4 shadow-2xl relative">
+            <button
+              onClick={() => setSaveModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <Lock className="w-5 h-5" />
+              </div>
+              <h3 className="text-lg font-bold text-white">Password Required</h3>
+            </div>
+
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Enter administrator password to save this project to your portfolio.
+            </p>
+
+            <div>
+              <input
+                type="password"
+                placeholder="Enter Password"
+                value={savePassword}
+                onChange={(e) => {
+                  setSavePassword(e.target.value);
+                  setSaveError('');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') confirmSaveToPortfolio();
+                }}
+                autoFocus
+                className="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500 placeholder-slate-600"
+              />
+              {saveError && <p className="text-xs text-rose-400 mt-1.5">{saveError}</p>}
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setSaveModalOpen(false)}
+                className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmSaveToPortfolio}
+                className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-colors shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-1.5"
+              >
+                <Bookmark className="w-3.5 h-3.5" />
+                Save Project
               </button>
             </div>
           </div>
