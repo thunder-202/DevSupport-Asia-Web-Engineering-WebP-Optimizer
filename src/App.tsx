@@ -34,12 +34,14 @@ import {
   RefreshCw,
   CheckCircle2,
   AlertCircle,
-  MapPin
+  MapPin,
+  Pencil
 } from 'lucide-react';
 import darkInfraBg from '@/src/assets/images/dark_infra_bg_1793338562027.jpg';
 import realUserFace from '@/src/assets/images/real_user_face_centered.png';
 import {
   PortfolioItem,
+  HARDCODED_PROJECTS,
   INITIAL_PORTFOLIO_ITEMS,
   PLACEHOLDER_PROJECT_IDS,
   PLACEHOLDER_PROJECT_TITLES
@@ -62,7 +64,7 @@ function GithubIcon({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-const CATEGORIES = ['All', 'Restaurants', 'Cafes', 'E-commerce', 'Real Estate', 'Custom Web'];
+const CATEGORIES = ['All', 'Custom Web', 'E-commerce'];
 
 export default function App() {
   // Converter States
@@ -77,34 +79,40 @@ export default function App() {
 
   // Save to Portfolio Form
   const [projectTitle, setProjectTitle] = useState<string>('');
-  const [projectCategory, setProjectCategory] = useState<string>('Restaurants');
+  const [projectCategory, setProjectCategory] = useState<string>('Custom Web');
   const [projectGithubUrl, setProjectGithubUrl] = useState<string>('');
   const [projectLiveUrl, setProjectLiveUrl] = useState<string>('');
   const [projectDescription, setProjectDescription] = useState<string>('');
 
-  // Portfolio & Filter States - Preserves the manually added active projects and removes placeholder projects
+  // Portfolio & Filter States - 12 verified deliverables hardcoded directly; new projects automatically integrated
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>(() => {
     try {
       const saved = localStorage.getItem('my_portfolio_items');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Filter out the 6 placeholder projects while strictly preserving the manually added active projects
-          const activeProjects = parsed.filter(
-            (item: PortfolioItem) =>
-              !PLACEHOLDER_PROJECT_IDS.has(item.id) &&
-              !PLACEHOLDER_PROJECT_TITLES.has(item.title) &&
-              item.isPermanent !== true
+          // Strictly filter out any legacy placeholder projects
+          const validSavedItems = parsed.filter(
+            (item: any) =>
+              item &&
+              !PLACEHOLDER_PROJECT_IDS.has(Number(item.id)) &&
+              !PLACEHOLDER_PROJECT_TITLES.has(String(item.title).trim())
           );
 
-          // Return the active projects keeping live links and github links untouched
-          return activeProjects;
+          // Find newly created custom projects (not part of the 12 hardcoded base)
+          const hardcodedIds = new Set(HARDCODED_PROJECTS.map((p) => p.id));
+          const newlyAddedProjects = validSavedItems.filter(
+            (item: PortfolioItem) => !hardcodedIds.has(item.id)
+          );
+
+          // Hardcoded 12 projects are guaranteed permanent and intact; newly added projects are automatically integrated
+          return [...newlyAddedProjects, ...HARDCODED_PROJECTS];
         }
       }
     } catch {
       // Fallback
     }
-    return INITIAL_PORTFOLIO_ITEMS;
+    return HARDCODED_PROJECTS;
   });
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
@@ -117,6 +125,19 @@ export default function App() {
   const [saveModalOpen, setSaveModalOpen] = useState<boolean>(false);
   const [savePassword, setSavePassword] = useState<string>('');
   const [saveError, setSaveError] = useState<string>('');
+
+  // Edit Project Modal
+  const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
+  const [editingProject, setEditingProject] = useState<PortfolioItem | null>(null);
+  const [editTitle, setEditTitle] = useState<string>('');
+  const [editCategory, setEditCategory] = useState<string>('Custom Web');
+  const [editGithubUrl, setEditGithubUrl] = useState<string>('');
+  const [editLiveUrl, setEditLiveUrl] = useState<string>('');
+  const [editDescription, setEditDescription] = useState<string>('');
+  const [editDataUrl, setEditDataUrl] = useState<string>('');
+  const [editSizeKb, setEditSizeKb] = useState<string>('');
+  const [editPassword, setEditPassword] = useState<string>('');
+  const [editError, setEditError] = useState<string>('');
 
   // Privacy & Policy Modal
   const [policyModalOpen, setPolicyModalOpen] = useState<boolean>(false);
@@ -153,6 +174,8 @@ export default function App() {
         setLightboxItem(null);
         setDeleteModalOpen(false);
         setSaveModalOpen(false);
+        setEditModalOpen(false);
+        setBackupModalOpen(false);
         setPolicyModalOpen(false);
       }
     };
@@ -384,9 +407,14 @@ export default function App() {
 
   const handleScrubPlaceholders = () => {
     setPortfolioItems((prev) => {
-      const cleaned = prev.filter(
-        (item) => !PLACEHOLDER_PROJECT_IDS.has(item.id) && !PLACEHOLDER_PROJECT_TITLES.has(item.title) && item.isPermanent !== true
+      const hardcodedIds = new Set(INITIAL_PORTFOLIO_ITEMS.map((p) => p.id));
+      const userCustom = prev.filter(
+        (item) =>
+          !hardcodedIds.has(item.id) &&
+          !PLACEHOLDER_PROJECT_IDS.has(item.id) &&
+          !PLACEHOLDER_PROJECT_TITLES.has(item.title)
       );
+      const cleaned = [...userCustom, ...INITIAL_PORTFOLIO_ITEMS];
       try {
         localStorage.setItem('my_portfolio_items', JSON.stringify(cleaned));
       } catch {
@@ -395,7 +423,7 @@ export default function App() {
       return cleaned;
     });
     setBackupModalOpen(false);
-    showToast('Cleaned all placeholder projects! Your 12 active projects are preserved.');
+    showToast('Cleaned all placeholder projects! All 12 active projects are preserved.');
   };
 
   const promptDelete = (id: number) => {
@@ -416,6 +444,68 @@ export default function App() {
     } else {
       setDeleteError('Incorrect password! Please enter the correct administrator password.');
     }
+  };
+
+  const handleStartEdit = (project: PortfolioItem) => {
+    setEditingProject(project);
+    setEditTitle(project.title);
+    setEditCategory(project.category);
+    setEditGithubUrl(project.githubUrl || '');
+    setEditLiveUrl(project.liveUrl || '');
+    setEditDescription(project.description || '');
+    setEditDataUrl(project.dataUrl || '');
+    setEditSizeKb(project.sizeKb || '');
+    setEditPassword('');
+    setEditError('');
+    setEditModalOpen(true);
+  };
+
+  const confirmSaveEdit = () => {
+    if (!editingProject) return;
+    if (editPassword !== ADMIN_PASSWORD) {
+      setEditError('Incorrect administrator password!');
+      return;
+    }
+    if (!editTitle.trim()) {
+      setEditError('Project title cannot be empty.');
+      return;
+    }
+
+    const safeGithubUrl = editGithubUrl.trim() ? normalizeGithubUrl(editGithubUrl.trim()) : undefined;
+    const safeLiveUrl = editLiveUrl.trim() ? normalizeWebUrl(editLiveUrl.trim()) : undefined;
+
+    setPortfolioItems((prev) =>
+      prev.map((item) => {
+        if (item.id === editingProject.id) {
+          return {
+            ...item,
+            title: editTitle.trim(),
+            category: editCategory,
+            description: editDescription.trim(),
+            githubUrl: safeGithubUrl,
+            liveUrl: safeLiveUrl,
+            dataUrl: editDataUrl.trim() || item.dataUrl,
+            sizeKb: editSizeKb.trim() || item.sizeKb,
+          };
+        }
+        return item;
+      })
+    );
+
+    setEditModalOpen(false);
+    setEditingProject(null);
+    showToast(`Saved changes to "${editTitle.trim()}"!`);
+  };
+
+  const handleResetToDefaults = () => {
+    setPortfolioItems(INITIAL_PORTFOLIO_ITEMS);
+    try {
+      localStorage.setItem('my_portfolio_items', JSON.stringify(INITIAL_PORTFOLIO_ITEMS));
+    } catch {
+      // Ignore
+    }
+    setBackupModalOpen(false);
+    showToast('Reset portfolio to the 12 default deliverables!');
   };
 
   const filteredItems =
@@ -1108,11 +1198,8 @@ export default function App() {
                           onChange={(e) => setProjectCategory(e.target.value)}
                           className="px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
                         >
-                          <option value="Restaurants">Restaurants</option>
-                          <option value="Cafes">Cafes</option>
-                          <option value="E-commerce">E-commerce</option>
-                          <option value="Real Estate">Real Estate</option>
                           <option value="Custom Web">Custom Web</option>
+                          <option value="E-commerce">E-commerce</option>
                         </select>
                       </div>
                       <div className="space-y-1.5">
@@ -1217,6 +1304,7 @@ export default function App() {
           activeCategory={activeCategory}
           onCategoryChange={setActiveCategory}
           onViewItem={setLightboxItem}
+          onEditItem={handleStartEdit}
           onDeleteItem={promptDelete}
           onOpenBackupModal={() => setBackupModalOpen(true)}
         />
@@ -1792,6 +1880,169 @@ export default function App() {
         </div>
       )}
 
+      {/* Edit Project Modal */}
+      {editModalOpen && editingProject && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="glass-card rounded-2xl p-6 sm:p-7 max-w-lg w-full border border-slate-800 space-y-4 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+            <button
+              onClick={() => {
+                setEditModalOpen(false);
+                setEditingProject(null);
+              }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Close modal"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                <Pencil className="w-5 h-5 text-indigo-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">Edit Project Details</h3>
+                <p className="text-xs text-slate-400">Modify information, links, and preview for this project</p>
+              </div>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                confirmSaveEdit();
+              }}
+              className="space-y-3.5 pt-2"
+            >
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Project Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600"
+                  placeholder="Project title..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Category</label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  >
+                    <option value="Custom Web">Custom Web</option>
+                    <option value="E-commerce">E-commerce</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Size Badge (KB)</label>
+                  <input
+                    type="text"
+                    value={editSizeKb}
+                    onChange={(e) => setEditSizeKb(e.target.value)}
+                    placeholder="e.g. 52.4"
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Live Website URL</label>
+                <input
+                  type="text"
+                  value={editLiveUrl}
+                  onChange={(e) => setEditLiveUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">GitHub Repository URL</label>
+                <input
+                  type="text"
+                  value={editGithubUrl}
+                  onChange={(e) => setEditGithubUrl(e.target.value)}
+                  placeholder="https://github.com/nayemurrr/..."
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Image URL / Preview Asset</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={editDataUrl}
+                    onChange={(e) => setEditDataUrl(e.target.value)}
+                    placeholder="https://images.unsplash.com/..."
+                    className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600 font-mono"
+                  />
+                  {editDataUrl && (
+                    <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-800 shrink-0 bg-slate-900">
+                      <img src={editDataUrl} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Summary of tech stack, features, and deliverable..."
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600 resize-none"
+                />
+              </div>
+
+              {/* Password Protection */}
+              <div className="pt-2 border-t border-slate-800/80">
+                <label className="text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-indigo-400" />
+                  Administrator Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Enter administrator password to save edits"
+                  value={editPassword}
+                  onChange={(e) => {
+                    setEditPassword(e.target.value);
+                    setEditError('');
+                  }}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600"
+                />
+                {editError && <p className="text-xs text-rose-400 mt-1.5">{editError}</p>}
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditModalOpen(false);
+                    setEditingProject(null);
+                  }}
+                  className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition-colors shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Bookmark className="w-3.5 h-3.5" />
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Deployment & Backup Manager Modal */}
       {backupModalOpen && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fadeIn">
@@ -1915,6 +2166,19 @@ export default function App() {
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Scrub Placeholder Projects
+              </button>
+            </div>
+
+            {/* Reset to Default 12 Deliverables */}
+            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
+              <span className="text-slate-500">Reset to original 12 deliverables?</span>
+              <button
+                type="button"
+                onClick={handleResetToDefaults}
+                className="text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-1 cursor-pointer font-medium"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Reset 12 Projects
               </button>
             </div>
           </div>

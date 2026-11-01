@@ -6,9 +6,10 @@ import {
   Eye,
   Layers,
   Lock,
-  Database
+  Database,
+  Pencil
 } from 'lucide-react';
-import { PortfolioItem } from '@/src/data/projectsData';
+import { PortfolioItem, HARDCODED_PROJECTS } from '@/src/data/projectsData';
 import { getGithubDisplay } from '@/src/utils/github';
 
 // Crisp GitHub SVG icon
@@ -25,28 +26,33 @@ function GithubIcon({ className = 'w-4 h-4' }: { className?: string }) {
 }
 
 export interface PortfolioShowcaseGridProps {
-  items: PortfolioItem[];
-  categories: string[];
-  activeCategory: string;
-  onCategoryChange: (category: string) => void;
-  onViewItem: (item: PortfolioItem) => void;
-  onDeleteItem: (id: number) => void;
-  onOpenBackupModal: () => void;
+  items?: PortfolioItem[];
+  categories?: string[];
+  activeCategory?: string;
+  onCategoryChange?: (category: string) => void;
+  onViewItem?: (item: PortfolioItem) => void;
+  onEditItem?: (item: PortfolioItem) => void;
+  onDeleteItem?: (id: number) => void;
+  onOpenBackupModal?: () => void;
 }
 
 export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
   items,
-  categories,
-  activeCategory,
+  categories = ['All', 'Custom Web', 'E-commerce'],
+  activeCategory = 'All',
   onCategoryChange,
   onViewItem,
+  onEditItem,
   onDeleteItem,
   onOpenBackupModal,
 }) => {
+  // Uses state items directly so custom edits and changes persist cleanly
+  const displayPool = items !== undefined ? items : HARDCODED_PROJECTS;
+
   const filteredItems =
     activeCategory === 'All'
-      ? items
-      : items.filter((item) => item.category === activeCategory);
+      ? displayPool
+      : displayPool.filter((item) => item.category === activeCategory);
 
   return (
     <section id="portfolio" className="py-20 bg-slate-900/50 border-t border-slate-800/80 scroll-mt-16">
@@ -61,45 +67,49 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
             Client engineering deliverables and verified WebP optimizations with dynamic GitHub and Live project links.
           </p>
 
-          {/* Persistent status & backup manager action */}
+          {/* Persistent status badge & backup action */}
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>
-                <strong className="text-white">{items.length} Projects</strong> Live &amp; Active
+                <strong className="text-white">{displayPool.length} Projects</strong> Live &amp; Active
               </span>
             </div>
-            <button
-              type="button"
-              onClick={onOpenBackupModal}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white border border-indigo-500/30 text-xs font-semibold transition-all shadow-sm cursor-pointer"
-            >
-              <Database className="w-3.5 h-3.5 text-indigo-400" />
-              Backup &amp; Export Data
-            </button>
+            {onOpenBackupModal && (
+              <button
+                type="button"
+                onClick={onOpenBackupModal}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white border border-indigo-500/30 text-xs font-semibold transition-all shadow-sm cursor-pointer"
+              >
+                <Database className="w-3.5 h-3.5 text-indigo-400" />
+                Backup &amp; Export Data
+              </button>
+            )}
           </div>
         </div>
 
         {/* Category Filter Tabs */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
-          {categories.map((cat) => {
-            const isActive = activeCategory === cat;
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => onCategoryChange(cat)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${
-                  isActive
-                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/30'
-                    : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700 hover:bg-slate-850'
-                }`}
-              >
-                {cat}
-              </button>
-            );
-          })}
-        </div>
+        {categories && categories.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+            {categories.map((cat) => {
+              const isActive = activeCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => onCategoryChange && onCategoryChange(cat)}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
+                    isActive
+                      ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/30'
+                      : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700 hover:bg-slate-850'
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Gallery Grid: 3 columns desktop, 2 tablet, 1 mobile */}
         {filteredItems.length === 0 ? (
@@ -109,7 +119,7 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
               No projects found under &ldquo;{activeCategory}&rdquo;.
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              Select &ldquo;All&rdquo; or convert an image above and save to your portfolio.
+              Select &ldquo;All&rdquo; to view all verified engineering deliverables.
             </p>
           </div>
         ) : (
@@ -127,7 +137,7 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                   <div>
                     {/* Hero Website Screenshot at Top */}
                     <div
-                      onClick={() => onViewItem(project)}
+                      onClick={() => onViewItem && onViewItem(project)}
                       className="h-52 bg-slate-950 overflow-hidden relative border-b border-slate-800/80 cursor-pointer group/img"
                       title="Click to view full preview in big window"
                     >
@@ -146,18 +156,35 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                         </span>
                       </div>
 
-                      {/* Delete Button (Protected with Admin Password) */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteItem(project.id);
-                        }}
-                        title="Delete with admin password"
-                        className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white flex items-center justify-center text-xs transition-colors shadow-lg backdrop-blur-sm z-10"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {/* Action buttons (Edit & Delete) */}
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+                        {onEditItem && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEditItem(project);
+                            }}
+                            title="Edit project details"
+                            className="w-8 h-8 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 text-white flex items-center justify-center text-xs transition-colors shadow-lg backdrop-blur-sm cursor-pointer"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        {onDeleteItem && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteItem(project.id);
+                            }}
+                            title="Delete with admin password"
+                            className="w-8 h-8 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white flex items-center justify-center text-xs transition-colors shadow-lg backdrop-blur-sm cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
 
                       {/* WebP Image Conversion Badge */}
                       {project.sizeKb && (
@@ -190,7 +217,7 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                           </a>
                         ) : (
                           <h3
-                            onClick={() => onViewItem(project)}
+                            onClick={() => onViewItem && onViewItem(project)}
                             className="text-base font-bold text-white leading-snug cursor-pointer hover:text-indigo-400 transition-colors"
                             title="Click to view details"
                           >
@@ -262,8 +289,8 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                     ) : (
                       <button
                         type="button"
-                        onClick={() => onViewItem(project)}
-                        className="flex-1 py-2.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white text-xs font-semibold text-center transition-colors flex items-center justify-center gap-2 border border-indigo-500/30"
+                        onClick={() => onViewItem && onViewItem(project)}
+                        className="flex-1 py-2.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white text-xs font-semibold text-center transition-colors flex items-center justify-center gap-2 border border-indigo-500/30 cursor-pointer"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>View Project</span>
@@ -273,7 +300,7 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                     {/* Quick Fullscreen Inspector Button */}
                     <button
                       type="button"
-                      onClick={() => onViewItem(project)}
+                      onClick={() => onViewItem && onViewItem(project)}
                       className="p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-colors border border-slate-800 hover:border-slate-700 shrink-0 cursor-pointer"
                       title="Inspect image in big window"
                     >
