@@ -174,6 +174,18 @@ export const HARDCODED_PROJECTS: PortfolioItem[] = [
     sizeKb: '33.9',
     isPermanent: true,
   },
+  {
+    id: 113,
+    title: 'TECHNEST',
+    category: 'E-commerce',
+    description: 'Context: Small retailers often struggle with slow page loads and complex backend setups when showcasing new product catalogs online. Action: Built a lightweight, fully responsive e-commerce front-end interface using clean HTML5, CSS3 layout techniques, and optimized asset handling. Result: Delivered a 100% static, fast-loading storefront template ready for direct hosting, minimizing server costs while ensuring smooth mobile performance.',
+    githubUrl: 'http://github.com/thunder-202/TECHNEST---Modern-Electronics-Store/tree/main',
+    liveUrl: 'https://technest-modern-electronics-store.onrender.com',
+    dataUrl: 'https://i.ibb.co.com/svw3LtFy/Screenshot-from-2026-11-02-01-04-06.png',
+    date: '2026-02-28',
+    sizeKb: '29.9',
+    isPermanent: true,
+  }
 ];
 
 // Initial default items guaranteed to render statically on any external visitor/reviewer load
