@@ -6,11 +6,10 @@ import {
   Eye,
   Layers,
   Lock,
-  CheckCircle2,
   Database
 } from 'lucide-react';
 import { PortfolioItem } from '@/src/data/projectsData';
-import { normalizeGithubUrl, getGithubDisplay, normalizeWebUrl } from '@/src/utils/github';
+import { getGithubDisplay } from '@/src/utils/github';
 
 // Crisp GitHub SVG icon
 function GithubIcon({ className = 'w-4 h-4' }: { className?: string }) {
@@ -67,7 +66,7 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>
-                <strong className="text-white">{items.length} Projects</strong> Live &amp; Persistent
+                <strong className="text-white">{items.length} Projects</strong> Live &amp; Active
               </span>
             </div>
             <button
@@ -107,20 +106,18 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
           <div className="py-16 text-center glass-card rounded-2xl max-w-xl mx-auto border border-slate-800">
             <Layers className="w-10 h-10 text-slate-600 mx-auto mb-3" />
             <p className="text-sm font-medium text-slate-300">
-              No previous work found under &ldquo;{activeCategory}&rdquo;.
+              No projects found under &ldquo;{activeCategory}&rdquo;.
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              Upload and convert an image using the tool above and click &ldquo;Save to My Previous Work&rdquo;.
+              Select &ldquo;All&rdquo; or convert an image above and save to your portfolio.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredItems.map((project) => {
               const hasValidGithub = Boolean(project.githubUrl && project.githubUrl.trim());
-              const formattedGithub = hasValidGithub ? normalizeGithubUrl(project.githubUrl) : '';
               const githubDisplay = hasValidGithub ? getGithubDisplay(project.githubUrl) : '';
               const hasValidLive = Boolean(project.liveUrl && project.liveUrl.trim());
-              const formattedLive = hasValidLive ? normalizeWebUrl(project.liveUrl) : '';
 
               return (
                 <div
@@ -171,24 +168,18 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                     </div>
 
                     <div className="p-5">
-                      {/* Category Badge & Deployed Build Status */}
+                      {/* Category Badge */}
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
                           {project.category}
                         </span>
-                        {project.isPermanent && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
-                            <CheckCircle2 className="w-2.5 h-2.5" />
-                            Deployed Build
-                          </span>
-                        )}
                       </div>
 
                       {/* Live URL Title */}
                       <div className="mt-2">
                         {hasValidLive ? (
                           <a
-                            href={formattedLive}
+                            href={project.liveUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="group/title inline-flex items-center gap-1.5 text-base font-bold text-white hover:text-indigo-400 transition-colors leading-snug"
@@ -215,11 +206,11 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                         </p>
                       )}
 
-                      {/* GitHub Link Box with Graceful Private Repository Fallback */}
+                      {/* GitHub Link Box with Disabled 'Private Repository' Fallback */}
                       <div className="mt-3.5">
                         {hasValidGithub ? (
                           <a
-                            href={formattedGithub}
+                            href={project.githubUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
@@ -235,7 +226,7 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                             <ExternalLink className="w-3 h-3 text-slate-500 group-hover/repo:text-white shrink-0 ml-1.5" />
                           </a>
                         ) : (
-                          /* Graceful fallback: Private Repository */
+                          /* Disabled Tag: Private Repository */
                           <div
                             className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-950/40 border border-slate-800/60 text-xs text-slate-400 select-none cursor-not-allowed"
                             title="Repository is private or proprietary"
@@ -255,11 +246,11 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                     </div>
                   </div>
 
-                  {/* "View Project" CTA Button */}
+                  {/* "View Project" CTA Button mapped directly to liveUrl */}
                   <div className="p-5 pt-0 flex items-center gap-2">
                     {hasValidLive ? (
                       <a
-                        href={formattedLive}
+                        href={project.liveUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 group/btn"

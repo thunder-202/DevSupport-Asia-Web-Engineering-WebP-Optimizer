@@ -37,7 +37,12 @@ import {
 } from 'lucide-react';
 import darkInfraBg from '@/src/assets/images/dark_infra_bg_1793338562027.jpg';
 import realUserFace from '@/src/assets/images/real_user_face_centered.png';
-import { PortfolioItem, INITIAL_PORTFOLIO_ITEMS } from '@/src/data/projectsData';
+import {
+  PortfolioItem,
+  INITIAL_PORTFOLIO_ITEMS,
+  PLACEHOLDER_PROJECT_IDS,
+  PLACEHOLDER_PROJECT_TITLES
+} from '@/src/data/projectsData';
 import { normalizeGithubUrl, getGithubDisplay, normalizeWebUrl } from '@/src/utils/github';
 import PortfolioShowcaseGrid from '@/src/components/PortfolioShowcaseGrid';
 
@@ -76,34 +81,23 @@ export default function App() {
   const [projectLiveUrl, setProjectLiveUrl] = useState<string>('');
   const [projectDescription, setProjectDescription] = useState<string>('');
 
-  // Portfolio & Filter States - Guaranteed to persist across deployments
+  // Portfolio & Filter States - Preserves the manually added active projects and removes placeholder projects
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>(() => {
     try {
       const saved = localStorage.getItem('my_portfolio_items');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Normalize existing items and correct any old 404 links
-          const sanitized = parsed.map((item: PortfolioItem) => {
-            let gh = item.githubUrl ? normalizeGithubUrl(item.githubUrl) : '';
-            if (gh.includes('mdnayemhosen/')) {
-              gh = gh.replace('mdnayemhosen/', 'nayem1816/');
-            }
-            if (gh === 'https://github.com/mdnayemhosen') {
-              gh = 'https://github.com/nayem1816';
-            }
-            return {
-              ...item,
-              githubUrl: gh || 'https://github.com/nayem1816',
-            };
-          });
-
-          // Ensure all official permanent projects are included so none are ever lost
-          const existingIds = new Set(sanitized.map((p: PortfolioItem) => p.id));
-          const missingPermanent = INITIAL_PORTFOLIO_ITEMS.filter(
-            (p) => !existingIds.has(p.id)
+          // Filter out the 6 placeholder projects while strictly preserving the manually added active projects
+          const activeProjects = parsed.filter(
+            (item: PortfolioItem) =>
+              !PLACEHOLDER_PROJECT_IDS.has(item.id) &&
+              !PLACEHOLDER_PROJECT_TITLES.has(item.title) &&
+              item.isPermanent !== true
           );
-          return [...sanitized, ...missingPermanent];
+
+          // Return the active projects keeping live links and github links untouched
+          return activeProjects;
         }
       }
     } catch {
@@ -364,15 +358,20 @@ export default function App() {
     e.target.value = '';
   };
 
-  const handleResetToOfficial = () => {
-    setPortfolioItems(INITIAL_PORTFOLIO_ITEMS);
-    try {
-      localStorage.removeItem('my_portfolio_items');
-    } catch {
-      // Ignore
-    }
+  const handleScrubPlaceholders = () => {
+    setPortfolioItems((prev) => {
+      const cleaned = prev.filter(
+        (item) => !PLACEHOLDER_PROJECT_IDS.has(item.id) && !PLACEHOLDER_PROJECT_TITLES.has(item.title) && item.isPermanent !== true
+      );
+      try {
+        localStorage.setItem('my_portfolio_items', JSON.stringify(cleaned));
+      } catch {
+        // Ignore
+      }
+      return cleaned;
+    });
     setBackupModalOpen(false);
-    showToast('Reset to 6 official deployed projects with verified GitHub links!');
+    showToast('Cleaned all placeholder projects! Your 12 active projects are preserved.');
   };
 
   const promptDelete = (id: number) => {
@@ -1807,16 +1806,16 @@ export default function App() {
               )}
             </div>
 
-            {/* Reset to official build */}
+            {/* Scrub placeholder projects */}
             <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
-              <span className="text-slate-500">Need to reload standard deliverables?</span>
+              <span className="text-slate-500">Need to scrub old placeholder items?</span>
               <button
                 type="button"
-                onClick={handleResetToOfficial}
+                onClick={handleScrubPlaceholders}
                 className="text-slate-400 hover:text-amber-400 transition-colors flex items-center gap-1 cursor-pointer font-medium"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                Reset to Official 6 Projects
+                Scrub Placeholder Projects
               </button>
             </div>
           </div>
