@@ -118,6 +118,9 @@ export default function App() {
   const [savePassword, setSavePassword] = useState<string>('');
   const [saveError, setSaveError] = useState<string>('');
 
+  // Privacy & Policy Modal
+  const [policyModalOpen, setPolicyModalOpen] = useState<boolean>(false);
+
   // Deployment & Backup Modal
   const [backupModalOpen, setBackupModalOpen] = useState<boolean>(false);
   const [importJsonText, setImportJsonText] = useState<string>('');
@@ -150,6 +153,7 @@ export default function App() {
         setLightboxItem(null);
         setDeleteModalOpen(false);
         setSaveModalOpen(false);
+        setPolicyModalOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -1476,11 +1480,19 @@ export default function App() {
       <footer className="border-t border-slate-800 py-8 text-center text-xs text-slate-500 glass-card">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>&copy; 2026 devsupport.asia. All rights reserved. Professional Web Engineering Services.</p>
-          <div className="flex items-center space-x-4 text-slate-400">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-slate-400">
             <a href="#about" className="hover:text-white transition-colors">About</a>
             <a href="#services" className="hover:text-white transition-colors">Services</a>
             <a href="#converter" className="hover:text-white transition-colors">Converter</a>
             <a href="#portfolio" className="hover:text-white transition-colors">Portfolio</a>
+            <button
+              type="button"
+              onClick={() => setPolicyModalOpen(true)}
+              className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors flex items-center gap-1 cursor-pointer hover:underline"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Privacy &amp; Policy
+            </button>
           </div>
         </div>
       </footer>
@@ -1903,6 +1915,212 @@ export default function App() {
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Scrub Placeholder Projects
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Privacy and Policy Modal */}
+      {policyModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
+          <div className="glass-card rounded-2xl max-w-3xl w-full border border-slate-800 shadow-2xl relative max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-5 sm:p-6 border-b border-slate-800 flex items-start justify-between gap-4 bg-slate-900/80">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20 shrink-0 mt-0.5">
+                  <ShieldCheck className="w-5 h-5 text-indigo-400" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-white leading-tight">
+                    DevSupport Asia — Terms of Service, Business Policies &amp; Privacy Notice
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-2 mt-2 text-[11px] text-slate-400">
+                    <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-emerald-400">
+                      Effective Date: November 2026
+                    </span>
+                    <span>&bull;</span>
+                    <a
+                      href="https://www.devsupport.asia/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-indigo-400 hover:text-indigo-300 font-mono flex items-center gap-1"
+                    >
+                      https://www.devsupport.asia/
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                    <span>&bull;</span>
+                    <span className="text-slate-300 font-medium">Provider: DevSupport Asia</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPolicyModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
+                title="Close (Esc)"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body - Scrollable */}
+            <div className="p-5 sm:p-7 overflow-y-auto space-y-6 text-xs sm:text-sm text-slate-300 leading-relaxed">
+              {/* Part 1 */}
+              <div className="space-y-4">
+                <div className="inline-block px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold uppercase tracking-wider">
+                  Part 1: Terms of Service &amp; Business Operations
+                </div>
+
+                <div className="space-y-2 p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                  <h4 className="text-white font-bold text-sm sm:text-base flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-md bg-indigo-600/30 text-indigo-400 flex items-center justify-center text-xs font-mono font-bold">1</span>
+                    Scope of Work &amp; Project Onboarding
+                  </h4>
+                  <p className="text-slate-400 text-xs sm:text-sm pl-8">
+                    DevSupport Asia provides custom web development, UI/UX design, WebGL/Three.js interactivity, performance optimization, and managed web infrastructure services. All project engagements begin with initial consultation and requirement alignment.
+                  </p>
+                </div>
+
+                <div className="space-y-2 p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                  <h4 className="text-white font-bold text-sm sm:text-base flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-md bg-indigo-600/30 text-indigo-400 flex items-center justify-center text-xs font-mono font-bold">2</span>
+                    Pricing, Mockup Confirmation &amp; Payment Terms
+                  </h4>
+                  <div className="space-y-2 text-xs sm:text-sm text-slate-400 pl-8">
+                    <p>
+                      <strong className="text-slate-200">Initial Deposit:</strong> Once the initial design mockup or project architecture is presented and confirmed by the client, a 50% deposit is required before full-scale development and staging begin.
+                    </p>
+                    <p>
+                      <strong className="text-slate-200">Final Balance:</strong> The remaining 50% balance must be settled upon final client review and approval prior to live production transfer.
+                    </p>
+                    <p>
+                      <strong className="text-slate-200">Design Licensing &amp; Purchases:</strong> If a client wishes to purchase or adapt any existing UI layout or portfolio design showcased on devsupport.asia, they must initiate direct contact with DevSupport Asia via the official email or WhatsApp details provided in our contact section.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                  <h4 className="text-white font-bold text-sm sm:text-base flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-md bg-indigo-600/30 text-indigo-400 flex items-center justify-center text-xs font-mono font-bold">3</span>
+                    Rapid Deployment &amp; Handover Guarantee
+                  </h4>
+                  <div className="space-y-2 text-xs sm:text-sm text-slate-400 pl-8">
+                    <p>
+                      <strong className="text-emerald-400">12-Hour Deployment Window:</strong> Upon final payment confirmation and client greenlight, DevSupport Asia commits to transferring full ownership, hosting configuration, and live site deployment within less than 12 hours.
+                    </p>
+                    <p>
+                      <strong className="text-slate-200">Ownership Transfer:</strong> Full rights to custom codebase, assets, and configured files belong to the client upon completion of payment.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                  <h4 className="text-white font-bold text-sm sm:text-base flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-md bg-indigo-600/30 text-indigo-400 flex items-center justify-center text-xs font-mono font-bold">4</span>
+                    Managed Hosting, Support &amp; Emergency Recovery (Bundled Package)
+                  </h4>
+                  <div className="space-y-2 text-xs sm:text-sm text-slate-400 pl-8">
+                    <p>
+                      <strong className="text-slate-200">Unified All-in-One Package:</strong> Our project packages strictly integrate custom web development alongside our mandatory Managed Hosting &amp; Support infrastructure. Though listed as descriptive line items, they form a single, non-severable service package upon purchase.
+                    </p>
+                    <p>
+                      <strong className="text-emerald-400">6-Hour Emergency System Restoration:</strong> If a client website experiences an unexpected outage, system break, or critical technical failure, the client should send an immediate email notification to DevSupport Asia support. DevSupport Asia guarantees active intervention to resolve the issue and restore the site to a fully functional live state within 6 hours of receiving the report.
+                    </p>
+                    <p>
+                      <strong className="text-slate-200">Monthly Infrastructure Retainer:</strong> To ensure peak loading speed, continuous security monitoring, high-availability uptime, and performance maintenance, clients must maintain the recurring monthly Managed Hosting &amp; Support fee.
+                    </p>
+                    <p>
+                      <strong className="text-rose-400">Service Interruption Notice:</strong> If the monthly Managed Hosting &amp; Support fee is unpaid or delinquent, DevSupport Asia cannot continue maintaining, securing, or hosting the website online. Unmaintained instances will be temporarily suspended or offline by the following monthly cycle.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Part 2 */}
+              <div className="space-y-4 pt-2">
+                <div className="inline-block px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-bold uppercase tracking-wider">
+                  Part 2: Privacy Policy
+                </div>
+
+                <div className="space-y-2 p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                  <h4 className="text-white font-bold text-sm sm:text-base flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-md bg-cyan-600/30 text-cyan-400 flex items-center justify-center text-xs font-mono font-bold">1</span>
+                    Information Collection
+                  </h4>
+                  <div className="space-y-1.5 text-xs sm:text-sm text-slate-400 pl-8">
+                    <p>We collect minimal personal details necessary for processing service requests, executing project contracts, and delivering technical support. This includes:</p>
+                    <ul className="list-disc pl-5 space-y-1 text-slate-300">
+                      <li>Contact details (Name, Email Address, WhatsApp/Phone Number).</li>
+                      <li>Billing, domain credentials, and technical project assets.</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="space-y-2 p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                  <h4 className="text-white font-bold text-sm sm:text-base flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-md bg-cyan-600/30 text-cyan-400 flex items-center justify-center text-xs font-mono font-bold">2</span>
+                    Use of Information
+                  </h4>
+                  <div className="space-y-1.5 text-xs sm:text-sm text-slate-400 pl-8">
+                    <p>Collected information is used exclusively to:</p>
+                    <ul className="list-disc pl-5 space-y-1 text-slate-300">
+                      <li>Communicate regarding project deliverables, mockups, and handover schedules.</li>
+                      <li>Provision, maintain, and bill for Managed Hosting &amp; Support services.</li>
+                      <li>Provide technical assistance and respond to emergency restoration requests made via our official channels.</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="space-y-2 p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                  <h4 className="text-white font-bold text-sm sm:text-base flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-md bg-cyan-600/30 text-cyan-400 flex items-center justify-center text-xs font-mono font-bold">3</span>
+                    Data Protection &amp; Confidentiality
+                  </h4>
+                  <p className="text-slate-400 text-xs sm:text-sm pl-8">
+                    DevSupport Asia enforces strict access controls. Client credentials, API keys, source codes, and communication logs are never sold, rented, or shared with unauthorized third parties.
+                  </p>
+                </div>
+              </div>
+
+              {/* Part 3 */}
+              <div className="space-y-4 pt-2">
+                <div className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                  Part 3: Contact &amp; Direct Inquiries
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2 text-xs sm:text-sm text-slate-300">
+                  <p>
+                    For project consultations, mockup approvals, hosting management, emergency site recovery, or custom design purchases, reach out directly through our official points of contact:
+                  </p>
+                  <div className="pt-1 space-y-1.5 pl-2 font-mono text-xs">
+                    <div className="flex items-center gap-2 text-indigo-300">
+                      <span className="font-bold text-slate-400 font-sans">Official Website:</span>
+                      <a href="https://www.devsupport.asia/" target="_blank" rel="noreferrer" className="underline hover:text-white">
+                        https://www.devsupport.asia/
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-2 text-emerald-300">
+                      <span className="font-bold text-slate-400 font-sans">Direct Channels:</span>
+                      <span>Email / WhatsApp (accessible via the contact section on devsupport.asia)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 sm:p-5 border-t border-slate-800 bg-slate-900/90 flex items-center justify-between gap-3">
+              <span className="text-[11px] text-slate-500 font-mono">
+                devsupport.asia &bull; Formal Business Agreement
+              </span>
+              <button
+                type="button"
+                onClick={() => setPolicyModalOpen(false)}
+                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-colors cursor-pointer"
+              >
+                I Understand &amp; Close
               </button>
             </div>
           </div>
