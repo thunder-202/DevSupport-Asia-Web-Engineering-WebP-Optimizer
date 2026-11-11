@@ -185,7 +185,18 @@ export const HARDCODED_PROJECTS: PortfolioItem[] = [
     date: '2026-02-28',
     sizeKb: '29.9',
     isPermanent: true,
-  }
+  },
+  {
+    id: 114,
+   title: 'Curry Express Biggera Waters',
+   category: 'Restaurant',
+   description: 'A local service provider relied on manual phone calls for bookings, missing out on potential customers after operating hours. Action: Developed an intuitive front-end dashboard featuring clear call-to-action sections, structured navigation, and client-side form validation. Result: Reduced manual scheduling friction and provided a polished 24/7 digital touchpoint to boost client conversions.',
+   liveUrl: 'https://72c2f1ec.curry-express-biggera-waters.pages.dev/',
+   dataUrl: 'https://i.ibb.co.com/kV4jDswJ/optimized-image-1.webp',
+   date: '2026-03-05',
+   sizeKb: '48.5',
+   isPermanent: true,
+   }
 ];
 
 // Initial default items guaranteed to render statically on any external visitor/reviewer load
