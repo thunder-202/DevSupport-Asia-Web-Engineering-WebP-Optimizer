@@ -813,11 +813,11 @@ export default function App() {
 
                 <div className="flex flex-col sm:flex-row gap-4 pt-3">
                   <a
-                    href="#converter"
+                    href="#portfolio"
                     className="px-6 py-3.5 rounded-[12px] bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover-bg)] text-[var(--btn-primary-text)] hover:text-[var(--btn-primary-hover-text)] font-semibold text-center border border-[var(--btn-primary-bg)] hover:border-[var(--btn-primary-hover-bg)] shadow-[var(--card-shadow)] transition-all duration-300 flex items-center justify-center gap-2 group"
                   >
-                    <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-all" />
-                    Try WebP Optimizer
+                    <Layers className="w-4 h-4 transition-transform group-hover:scale-110" />
+                    My Previous Work
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                   </a>
                   <a
