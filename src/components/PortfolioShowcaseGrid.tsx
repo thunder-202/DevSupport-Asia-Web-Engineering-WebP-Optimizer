@@ -38,7 +38,7 @@ export interface PortfolioShowcaseGridProps {
 
 export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
   items,
-  categories = ['All', 'Custom Web', 'E-commerce'],
+  categories = ['All', 'E-commerce', 'Real Estate', 'Restaurant', 'Cafes', 'Salon and BeautyParlour'],
   activeCategory = 'All',
   onCategoryChange,
   onViewItem,
@@ -49,39 +49,64 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
   // Uses state items directly so custom edits and changes persist cleanly
   const displayPool = items !== undefined ? items : HARDCODED_PROJECTS;
 
+  const matchesCategory = (itemCategory: string, selectedCategory: string) => {
+    const normalizedItem = itemCategory.trim().toLowerCase();
+    const normalizedSelected = selectedCategory.trim().toLowerCase();
+    if (normalizedItem === normalizedSelected) return true;
+    if (normalizedSelected === 'restaurant') {
+      return normalizedItem === 'restaurant' || normalizedItem === 'restaurants';
+    }
+    if (normalizedSelected === 'cafes') {
+      return normalizedItem === 'cafes' || normalizedItem === 'cafe' || normalizedItem === 'cafee';
+    }
+    if (normalizedSelected === 'salon and beautyparlour') {
+      return (
+        normalizedItem === 'salon and beautyparlour' ||
+        normalizedItem === 'salon & beauty parlour' ||
+        normalizedItem === 'salon and beauty parlour' ||
+        normalizedItem === 'salon' ||
+        normalizedItem === 'beauty parlour' ||
+        normalizedItem === 'beautyparlour'
+      );
+    }
+    return false;
+  };
+
   const filteredItems =
     activeCategory === 'All'
       ? displayPool
-      : displayPool.filter((item) => item.category === activeCategory);
+      : displayPool.filter((item) => matchesCategory(item.category, activeCategory));
 
   return (
-    <section id="portfolio" className="py-20 bg-slate-900/50 border-t border-slate-800/80 scroll-mt-16">
+    <section id="portfolio" className="py-24 bg-[var(--bg-canvas)] border-t border-[var(--border-subtle)] scroll-mt-16 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-8">
-          <span className="text-xs font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <span className="inline-block text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-gold)] bg-[var(--bg-gold-tint)] px-3.5 py-1.5 rounded-[12px] border border-[var(--border-gold)]">
             Production Portfolio
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mt-3">My Previous Work</h2>
-          <p className="text-slate-400 mt-2 text-sm sm:text-base">
+          <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] tracking-[-0.025em] mt-4">
+            My Previous Work
+          </h2>
+          <p className="text-[var(--text-secondary)] mt-3 text-sm sm:text-base leading-relaxed">
             Client engineering deliverables and verified WebP optimizations with dynamic GitHub and Live project links.
           </p>
 
           {/* Persistent status badge & backup action */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-[12px] bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs text-[var(--text-secondary)] shadow-[var(--card-shadow)]">
+              <span className="w-2 h-2 rounded-full bg-[var(--accent-gold)]" />
               <span>
-                <strong className="text-white">{displayPool.length} Projects</strong> Live &amp; Active
+                <strong className="text-[var(--text-primary)] font-semibold tabular-nums">{displayPool.length} Projects</strong> Live &amp; Active
               </span>
             </div>
             {onOpenBackupModal && (
               <button
                 type="button"
                 onClick={onOpenBackupModal}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white border border-indigo-500/30 text-xs font-semibold transition-all shadow-sm cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-[12px] bg-[var(--bg-surface)] hover:bg-[var(--btn-primary-bg)] text-[var(--text-primary)] hover:text-[var(--btn-primary-text)] border border-[var(--border-subtle)] hover:border-[var(--btn-primary-bg)] text-xs font-semibold transition-all duration-200 shadow-[var(--card-shadow)] cursor-pointer"
               >
-                <Database className="w-3.5 h-3.5 text-indigo-400" />
+                <Database className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
                 Backup &amp; Export Data
               </button>
             )}
@@ -90,7 +115,7 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
 
         {/* Category Filter Tabs */}
         {categories && categories.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 mb-12">
             {categories.map((cat) => {
               const isActive = activeCategory === cat;
               return (
@@ -98,10 +123,10 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                   key={cat}
                   type="button"
                   onClick={() => onCategoryChange && onCategoryChange(cat)}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
+                  className={`px-5 py-2.5 rounded-[12px] text-xs font-semibold tracking-wide transition-all duration-200 border cursor-pointer ${
                     isActive
-                      ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/30'
-                      : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700 hover:bg-slate-850'
+                      ? 'bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] border-[var(--btn-primary-bg)] shadow-[var(--card-shadow)]'
+                      : 'bg-[var(--bg-surface)] text-[var(--text-secondary)] border-[var(--border-subtle)] hover:border-[var(--border-gold)] hover:text-[var(--text-primary)]'
                   }`}
                 >
                   {cat}
@@ -113,12 +138,12 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
 
         {/* Gallery Grid: 3 columns desktop, 2 tablet, 1 mobile */}
         {filteredItems.length === 0 ? (
-          <div className="py-16 text-center glass-card rounded-2xl max-w-xl mx-auto border border-slate-800">
-            <Layers className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-            <p className="text-sm font-medium text-slate-300">
+          <div className="p-8 sm:py-16 text-center bg-[var(--bg-surface)] rounded-[12px] max-w-xl mx-auto border border-[var(--border-subtle)] shadow-[var(--card-shadow)]">
+            <Layers className="w-10 h-10 text-[var(--accent-gold)] opacity-80 mx-auto mb-3" />
+            <p className="text-sm font-semibold text-[var(--text-primary)]">
               No projects found under &ldquo;{activeCategory}&rdquo;.
             </p>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-[var(--text-secondary)] mt-1.5">
               Select &ldquo;All&rdquo; to view all verified engineering deliverables.
             </p>
           </div>
@@ -132,26 +157,26 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
               return (
                 <div
                   key={project.id}
-                  className="glass-card rounded-xl overflow-hidden border border-slate-800 hover:border-slate-700 group relative flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-lg bg-slate-900/80"
+                  className="bg-[var(--bg-surface)] rounded-[12px] overflow-hidden border border-[var(--border-subtle)] shadow-[var(--card-shadow)] luxury-card-hover group relative flex flex-col justify-between"
                 >
                   <div>
                     {/* Hero Website Screenshot at Top */}
                     <div
                       onClick={() => onViewItem && onViewItem(project)}
-                      className="h-52 bg-slate-950 overflow-hidden relative border-b border-slate-800/80 cursor-pointer group/img"
+                      className="h-52 bg-[var(--bg-image-frame)] overflow-hidden relative border-b border-[var(--border-subtle)] cursor-pointer group/img"
                       title="Click to view full preview in big window"
                     >
                       <img
                         src={project.dataUrl}
                         alt={project.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover/img:scale-[1.04]"
                         loading="lazy"
                         decoding="async"
                       />
                       {/* Hover Overlay Hint */}
-                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                        <span className="px-3 py-1.5 rounded-xl bg-slate-900/95 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xl border border-indigo-500/30 backdrop-blur-sm">
-                          <Maximize2 className="w-3.5 h-3.5 text-indigo-400" />
+                      <div className="absolute inset-0 bg-[#111827]/35 opacity-0 group-hover/img:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none">
+                        <span className="px-3.5 py-2 rounded-[12px] bg-[var(--bg-surface)] text-[var(--text-primary)] text-xs font-semibold flex items-center gap-1.5 shadow-lg border border-[var(--border-subtle)] backdrop-blur-sm">
+                          <Maximize2 className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
                           View in Big Window
                         </span>
                       </div>
@@ -166,7 +191,7 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                               onEditItem(project);
                             }}
                             title="Edit project details"
-                            className="w-8 h-8 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 text-white flex items-center justify-center text-xs transition-colors shadow-lg backdrop-blur-sm cursor-pointer"
+                            className="w-8 h-8 rounded-[10px] bg-[var(--bg-surface)] hover:bg-[var(--btn-primary-bg)] text-[var(--text-primary)] hover:text-[var(--btn-primary-text)] border border-[var(--border-subtle)] flex items-center justify-center text-xs transition-all duration-200 shadow-sm backdrop-blur-sm cursor-pointer"
                           >
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
@@ -179,7 +204,7 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                               onDeleteItem(project.id);
                             }}
                             title="Delete with admin password"
-                            className="w-8 h-8 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white flex items-center justify-center text-xs transition-colors shadow-lg backdrop-blur-sm cursor-pointer"
+                            className="w-8 h-8 rounded-[10px] bg-[var(--bg-surface)] hover:bg-rose-600 text-[var(--text-rose)] hover:text-white border border-[var(--border-subtle)] hover:border-rose-600 flex items-center justify-center text-xs transition-all duration-200 shadow-sm backdrop-blur-sm cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -188,37 +213,37 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
 
                       {/* WebP Image Conversion Badge */}
                       {project.sizeKb && (
-                        <span className="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur-md px-2 py-0.5 rounded text-[11px] font-mono text-emerald-400 border border-slate-800">
+                        <span className="absolute bottom-3 left-3 bg-[var(--bg-surface)] backdrop-blur-md px-2.5 py-1 rounded-[8px] text-[11px] font-mono font-medium text-[var(--text-primary)] border border-[var(--border-subtle)] shadow-sm tabular-nums">
                           {project.sizeKb} KB
                         </span>
                       )}
                     </div>
 
-                    <div className="p-5">
+                    <div className="p-8 pb-6">
                       {/* Category Badge */}
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider text-indigo-400 bg-indigo-500/10 border border-indigo-500/20">
+                        <span className="inline-block px-2.5 py-0.5 rounded-[8px] text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--text-gold)] bg-[var(--bg-gold-tint)] border border-[var(--border-gold)]">
                           {project.category}
                         </span>
                       </div>
 
                       {/* Live URL Title */}
-                      <div className="mt-2">
+                      <div className="mt-3">
                         {hasValidLive ? (
                           <a
                             href={project.liveUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="group/title inline-flex items-center gap-1.5 text-base font-bold text-white hover:text-indigo-400 transition-colors leading-snug"
+                            className="group/title inline-flex items-center gap-1.5 text-lg font-bold text-[var(--text-primary)] hover:text-[var(--text-gold)] transition-colors duration-200 leading-snug tracking-[-0.018em]"
                             title={`Open live project: ${project.title}`}
                           >
                             <span>{project.title}</span>
-                            <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover/title:text-indigo-400 transition-colors shrink-0" />
+                            <ExternalLink className="w-3.5 h-3.5 text-[var(--text-muted)] group-hover/title:text-[var(--accent-gold)] transition-colors shrink-0" />
                           </a>
                         ) : (
                           <h3
                             onClick={() => onViewItem && onViewItem(project)}
-                            className="text-base font-bold text-white leading-snug cursor-pointer hover:text-indigo-400 transition-colors"
+                            className="text-lg font-bold text-[var(--text-primary)] leading-snug tracking-[-0.018em] cursor-pointer hover:text-[var(--text-gold)] transition-colors duration-200"
                             title="Click to view details"
                           >
                             {project.title}
@@ -228,43 +253,43 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
 
                       {/* CAR Context Snippet */}
                       {project.description && (
-                        <p className="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">
+                        <p className="text-xs sm:text-[13px] text-[var(--text-secondary)] mt-2.5 line-clamp-2 leading-relaxed">
                           {project.description}
                         </p>
                       )}
 
                       {/* GitHub Link Box with Disabled 'Private Repository' Fallback */}
-                      <div className="mt-3.5">
+                      <div className="mt-5">
                         {hasValidGithub ? (
                           <a
                             href={project.githubUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-950/90 border border-slate-800 hover:border-indigo-500/60 text-xs transition-all group/repo shadow-inner"
+                            className="flex items-center justify-between px-3.5 py-2.5 rounded-[10px] bg-[var(--bg-subtle)] border border-[var(--border-subtle)] hover:border-[var(--border-gold)] hover:bg-[var(--bg-subtle-hover)] text-xs transition-all duration-200 group/repo"
                             title={`Open ${project.title} repository on GitHub`}
                           >
                             <span className="flex items-center gap-2 truncate">
-                              <GithubIcon className="w-3.5 h-3.5 text-slate-400 group-hover/repo:text-white shrink-0" />
-                              <span className="truncate font-mono text-[11px] text-indigo-300 group-hover/repo:text-indigo-200">
+                              <GithubIcon className="w-3.5 h-3.5 text-[var(--text-secondary)] group-hover/repo:text-[var(--text-primary)] shrink-0 transition-colors" />
+                              <span className="truncate font-mono text-[11px] text-[var(--text-secondary)] group-hover/repo:text-[var(--text-primary)] transition-colors">
                                 {githubDisplay}
                               </span>
                             </span>
-                            <ExternalLink className="w-3 h-3 text-slate-500 group-hover/repo:text-white shrink-0 ml-1.5" />
+                            <ExternalLink className="w-3 h-3 text-[var(--text-muted)] group-hover/repo:text-[var(--accent-gold)] shrink-0 ml-1.5 transition-colors" />
                           </a>
                         ) : (
                           /* Disabled Tag: Private Repository */
                           <div
-                            className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-950/40 border border-slate-800/60 text-xs text-slate-400 select-none cursor-not-allowed"
+                            className="flex items-center justify-between px-3.5 py-2.5 rounded-[10px] bg-[var(--bg-subtle)] border border-[var(--border-subtle)] text-xs text-[var(--text-muted)] select-none cursor-not-allowed"
                             title="Repository is private or proprietary"
                           >
                             <span className="flex items-center gap-2 truncate">
-                              <Lock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                              <span className="font-mono text-[11px] text-slate-400">
+                              <Lock className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
+                              <span className="font-mono text-[11px] text-[var(--text-muted)]">
                                 Private Repository
                               </span>
                             </span>
-                            <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-500">
+                            <span className="text-[10px] uppercase font-semibold tracking-wider px-2 py-0.5 rounded-[6px] bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-muted)]">
                               Private
                             </span>
                           </div>
@@ -274,23 +299,23 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                   </div>
 
                   {/* "View Project" CTA Button mapped directly to liveUrl */}
-                  <div className="p-5 pt-0 flex items-center gap-2">
+                  <div className="px-8 pb-8 pt-0 flex items-center gap-2.5">
                     {hasValidLive ? (
                       <a
                         href={project.liveUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 group/btn"
+                        className="flex-1 py-2.5 px-4 rounded-[12px] bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover-bg)] text-[var(--btn-primary-text)] hover:text-[var(--btn-primary-hover-text)] text-xs font-semibold tracking-wide text-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-center gap-2 shadow-sm group/btn"
                         title="Open live website in new tab"
                       >
                         <span>View Project</span>
-                        <ExternalLink className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" />
+                        <ExternalLink className="w-3.5 h-3.5 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
                       </a>
                     ) : (
                       <button
                         type="button"
                         onClick={() => onViewItem && onViewItem(project)}
-                        className="flex-1 py-2.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white text-xs font-semibold text-center transition-colors flex items-center justify-center gap-2 border border-indigo-500/30 cursor-pointer"
+                        className="flex-1 py-2.5 px-4 rounded-[12px] bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover-bg)] text-[var(--btn-primary-text)] hover:text-[var(--btn-primary-hover-text)] text-xs font-semibold tracking-wide text-center transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>View Project</span>
@@ -301,10 +326,10 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
                     <button
                       type="button"
                       onClick={() => onViewItem && onViewItem(project)}
-                      className="p-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-colors border border-slate-800 hover:border-slate-700 shrink-0 cursor-pointer"
+                      className="p-2.5 rounded-[12px] bg-[var(--bg-subtle)] hover:bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-semibold transition-all duration-200 border border-[var(--border-subtle)] hover:border-[var(--border-gold)] shrink-0 cursor-pointer"
                       title="Inspect image in big window"
                     >
-                      <Maximize2 className="w-4 h-4 text-slate-400 hover:text-indigo-400 transition-colors" />
+                      <Maximize2 className="w-4 h-4 transition-colors" />
                     </button>
                   </div>
                 </div>
