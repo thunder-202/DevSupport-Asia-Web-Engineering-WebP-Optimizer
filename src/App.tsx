@@ -68,6 +68,9 @@ function GithubIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 const CATEGORIES = ['All', 'Real Estate', 'Restaurant', 'Cafes', 'E-commerce', 'Salon and BeautyParlour', 'Custom Site'];
 
+const computeProjectsSignature = (items: PortfolioItem[]) =>
+  items.map((p) => `${p.id}:${p.title}:${p.category}`).join('|');
+
 export default function App() {
   // Converter States
   const [quality, setQuality] = useState<number>(85);
@@ -86,14 +89,15 @@ export default function App() {
   const [projectLiveUrl, setProjectLiveUrl] = useState<string>('');
   const [projectDescription, setProjectDescription] = useState<string>('');
 
-  // Portfolio & Filter States - 12 verified deliverables hardcoded directly; new projects automatically integrated
+  // Portfolio & Filter States - source code backed by src/data/projectsData.ts & synced via /api/projects/sync
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>(() => {
+    const currentSig = computeProjectsSignature(HARDCODED_PROJECTS);
     try {
       const saved = localStorage.getItem('my_portfolio_items');
+      const savedSig = localStorage.getItem('my_portfolio_base_sig');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Strictly filter out any legacy placeholder projects
           const validSavedItems = parsed.filter(
             (item: any) =>
               item &&
@@ -101,22 +105,32 @@ export default function App() {
               !PLACEHOLDER_PROJECT_TITLES.has(String(item.title).trim())
           );
 
-          // Find newly created custom projects (not part of the 12 hardcoded base)
-          const hardcodedIds = new Set(HARDCODED_PROJECTS.map((p) => p.id));
-          const newlyAddedProjects = validSavedItems.filter(
-            (item: PortfolioItem) => !hardcodedIds.has(item.id)
-          );
-
-          // Hardcoded 12 projects are guaranteed permanent and intact; newly added projects are automatically integrated
-          return [...newlyAddedProjects, ...HARDCODED_PROJECTS];
+          if (validSavedItems.length > 0) {
+            if (!savedSig || savedSig === currentSig) {
+              return validSavedItems;
+            }
+            // Source code was updated externally: merge new code with any unsynced custom IDs
+            const hardcodedIds = new Set(HARDCODED_PROJECTS.map((p) => p.id));
+            const newlyAddedProjects = validSavedItems.filter(
+              (item: PortfolioItem) => !hardcodedIds.has(item.id)
+            );
+            localStorage.setItem('my_portfolio_base_sig', currentSig);
+            return [...newlyAddedProjects, ...HARDCODED_PROJECTS];
+          }
         }
       }
+      localStorage.setItem('my_portfolio_base_sig', currentSig);
     } catch {
       // Fallback
     }
     return HARDCODED_PROJECTS;
   });
   const [activeCategory, setActiveCategory] = useState<string>('All');
+
+  // Server-Verified Admin Auth & Code Sync States
+  const [authConfigured, setAuthConfigured] = useState<boolean>(true);
+  const [setupConfirmPassword, setSetupConfirmPassword] = useState<string>('');
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   // Password Modals (Delete & Save)
   const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
@@ -191,6 +205,45 @@ export default function App() {
       // Storage quota or error handling
     }
   }, [portfolioItems]);
+
+  // Check server admin password configuration & latest disk code sync on mount
+  useEffect(() => {
+    let active = true;
+    fetch('/api/auth/status')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (active && data && typeof data.configured === 'boolean') {
+          setAuthConfigured(data.configured);
+        }
+      })
+      .catch(() => {
+        // Ignore if running in static-only preview
+      });
+
+    fetch('/api/projects')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (active && data && Array.isArray(data.projects) && data.projects.length > 0) {
+          const diskSig = computeProjectsSignature(data.projects);
+          const bundledSig = computeProjectsSignature(HARDCODED_PROJECTS);
+          if (diskSig !== bundledSig) {
+            setPortfolioItems(data.projects);
+            try {
+              localStorage.setItem('my_portfolio_base_sig', diskSig);
+            } catch {
+              // Ignore
+            }
+          }
+        }
+      })
+      .catch(() => {
+        // Ignore if running in static-only preview
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Handle ESC key to exit modals
   useEffect(() => {
@@ -312,7 +365,65 @@ export default function App() {
     );
   };
 
-  const ADMIN_PASSWORD = 'Nay#-%"(202)!';
+  const syncProjectsWithAuth = async (
+    nextItems: PortfolioItem[],
+    passwordInput: string,
+    confirmInput?: string
+  ): Promise<{ ok: boolean; projects?: PortfolioItem[]; error?: string }> => {
+    if (!passwordInput) {
+      return { ok: false, error: 'Please enter the administrator password.' };
+    }
+
+    setIsSyncing(true);
+    try {
+      if (!authConfigured) {
+        if (passwordInput.length < 8) {
+          return { ok: false, error: 'Password must be at least 8 characters.' };
+        }
+        if (passwordInput !== confirmInput) {
+          return { ok: false, error: 'Passwords do not match.' };
+        }
+        const claimRes = await fetch('/api/auth/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: passwordInput }),
+        });
+        const claimData = await claimRes.json().catch(() => ({}));
+        if (!claimRes.ok && claimRes.status !== 409) {
+          return { ok: false, error: claimData.error || 'Failed to set administrator password.' };
+        }
+        setAuthConfigured(true);
+      }
+
+      const syncRes = await fetch('/api/projects/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: passwordInput, projects: nextItems }),
+      });
+      const syncData = await syncRes.json().catch(() => ({}));
+
+      if (syncRes.status === 403 && syncData.needsSetup) {
+        setAuthConfigured(false);
+        return { ok: false, error: 'Please set your administrator password first.' };
+      }
+
+      if (!syncRes.ok) {
+        return { ok: false, error: syncData.error || 'Failed to save changes to source code.' };
+      }
+
+      const syncedProjects: PortfolioItem[] = Array.isArray(syncData.projects) ? syncData.projects : nextItems;
+      try {
+        localStorage.setItem('my_portfolio_base_sig', computeProjectsSignature(syncedProjects));
+      } catch {
+        // Ignore storage error
+      }
+      return { ok: true, projects: syncedProjects };
+    } catch {
+      return { ok: false, error: 'Unable to reach server to save changes to code.' };
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const handleSaveToPortfolio = (e: React.FormEvent) => {
     e.preventDefault();
@@ -321,16 +432,12 @@ export default function App() {
       return;
     }
     setSavePassword('');
+    setSetupConfirmPassword('');
     setSaveError('');
     setSaveModalOpen(true);
   };
 
-  const confirmSaveToPortfolio = () => {
-    if (savePassword !== ADMIN_PASSWORD) {
-      setSaveError('Incorrect password! Please enter the correct administrator password.');
-      return;
-    }
-
+  const confirmSaveToPortfolio = async () => {
     const title = projectTitle.trim() || `Optimized Project #${portfolioItems.length + 1}`;
     const safeGithubUrl = projectGithubUrl.trim() ? normalizeGithubUrl(projectGithubUrl.trim()) : undefined;
     const safeLiveUrl = projectLiveUrl.trim() ? normalizeWebUrl(projectLiveUrl.trim()) : undefined;
@@ -344,19 +451,26 @@ export default function App() {
       dataUrl: webpDataUrl,
       date: new Date().toISOString().split('T')[0],
       sizeKb: webpSizeKb,
-      isPermanent: false,
+      isPermanent: true,
     };
 
-    setPortfolioItems((prev) => [newItem, ...prev]);
+    const nextItems = [newItem, ...portfolioItems];
+    const result = await syncProjectsWithAuth(nextItems, savePassword, setupConfirmPassword);
+    if (!result.ok) {
+      setSaveError(result.error || 'Incorrect password!');
+      return;
+    }
+
+    setPortfolioItems(result.projects || nextItems);
     setProjectTitle('');
     setProjectGithubUrl('');
     setProjectLiveUrl('');
     setProjectDescription('');
     setSaveModalOpen(false);
     setSavePassword('');
-    showToast(`Saved "${title}" to My Previous Work!`);
+    setSetupConfirmPassword('');
+    showToast(`Saved "${title}" to source code!`);
 
-    // Smooth scroll to portfolio section
     const target = document.getElementById('portfolio');
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
@@ -454,21 +568,25 @@ export default function App() {
   const promptDelete = (id: number) => {
     setItemToDeleteId(id);
     setDeletePassword('');
+    setSetupConfirmPassword('');
     setDeleteError('');
     setDeleteModalOpen(true);
   };
 
-  const ADMIN_DELETE_PASSWORD = ADMIN_PASSWORD;
-
-  const confirmDelete = () => {
-    if (deletePassword === ADMIN_DELETE_PASSWORD) {
-      setPortfolioItems(portfolioItems.filter((item) => item.id !== itemToDeleteId));
-      setDeleteModalOpen(false);
-      setItemToDeleteId(null);
-      showToast('Item deleted successfully.');
-    } else {
-      setDeleteError('Incorrect password! Please enter the correct administrator password.');
+  const confirmDelete = async () => {
+    const nextItems = portfolioItems.filter((item) => item.id !== itemToDeleteId);
+    const result = await syncProjectsWithAuth(nextItems, deletePassword, setupConfirmPassword);
+    if (!result.ok) {
+      setDeleteError(result.error || 'Incorrect password!');
+      return;
     }
+
+    setPortfolioItems(result.projects || nextItems);
+    setDeleteModalOpen(false);
+    setItemToDeleteId(null);
+    setDeletePassword('');
+    setSetupConfirmPassword('');
+    showToast('Item deleted and saved to code.');
   };
 
   const handleStartEdit = (project: PortfolioItem) => {
@@ -481,16 +599,13 @@ export default function App() {
     setEditDataUrl(project.dataUrl || '');
     setEditSizeKb(project.sizeKb || '');
     setEditPassword('');
+    setSetupConfirmPassword('');
     setEditError('');
     setEditModalOpen(true);
   };
 
-  const confirmSaveEdit = () => {
+  const confirmSaveEdit = async () => {
     if (!editingProject) return;
-    if (editPassword !== ADMIN_PASSWORD) {
-      setEditError('Incorrect administrator password!');
-      return;
-    }
     if (!editTitle.trim()) {
       setEditError('Project title cannot be empty.');
       return;
@@ -499,27 +614,34 @@ export default function App() {
     const safeGithubUrl = editGithubUrl.trim() ? normalizeGithubUrl(editGithubUrl.trim()) : undefined;
     const safeLiveUrl = editLiveUrl.trim() ? normalizeWebUrl(editLiveUrl.trim()) : undefined;
 
-    setPortfolioItems((prev) =>
-      prev.map((item) => {
-        if (item.id === editingProject.id) {
-          return {
-            ...item,
-            title: editTitle.trim(),
-            category: editCategory,
-            description: editDescription.trim(),
-            githubUrl: safeGithubUrl,
-            liveUrl: safeLiveUrl,
-            dataUrl: editDataUrl.trim() || item.dataUrl,
-            sizeKb: editSizeKb.trim() || item.sizeKb,
-          };
-        }
-        return item;
-      })
-    );
+    const nextItems = portfolioItems.map((item) => {
+      if (item.id === editingProject.id) {
+        return {
+          ...item,
+          title: editTitle.trim(),
+          category: editCategory,
+          description: editDescription.trim(),
+          githubUrl: safeGithubUrl,
+          liveUrl: safeLiveUrl,
+          dataUrl: editDataUrl.trim() || item.dataUrl,
+          sizeKb: editSizeKb.trim() || item.sizeKb,
+        };
+      }
+      return item;
+    });
 
+    const result = await syncProjectsWithAuth(nextItems, editPassword, setupConfirmPassword);
+    if (!result.ok) {
+      setEditError(result.error || 'Incorrect administrator password!');
+      return;
+    }
+
+    setPortfolioItems(result.projects || nextItems);
     setEditModalOpen(false);
     setEditingProject(null);
-    showToast(`Saved changes to "${editTitle.trim()}"!`);
+    setEditPassword('');
+    setSetupConfirmPassword('');
+    showToast(`Saved "${editTitle.trim()}" to source code!`);
   };
 
   const handleResetToDefaults = () => {
@@ -1804,28 +1926,47 @@ export default function App() {
               <div className="w-9 h-9 rounded-lg bg-[var(--bg-rose-soft)] border border-[var(--border-rose-soft)] text-[var(--text-rose)] flex items-center justify-center">
                 <Lock className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-[-0.02em]">Password Required</h3>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-[-0.02em]">
+                {authConfigured ? 'Password Required' : 'Set Admin Password'}
+              </h3>
             </div>
 
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-              Enter administrator password to delete this item from your portfolio.
+              {authConfigured
+                ? 'Enter administrator password to delete this item and update source code.'
+                : 'First-time setup: choose an administrator password (min. 8 characters) to save code changes.'}
             </p>
 
-            <div>
+            <div className="space-y-2.5">
               <input
                 type="password"
-                placeholder="Enter Password"
+                placeholder={authConfigured ? 'Enter Password' : 'Create Admin Password (8+ chars)'}
                 value={deletePassword}
                 onChange={(e) => {
                   setDeletePassword(e.target.value);
                   setDeleteError('');
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') confirmDelete();
+                  if (e.key === 'Enter' && authConfigured) confirmDelete();
                 }}
                 autoFocus
                 className="w-full px-3.5 py-2.5 rounded-[10px] bg-[var(--bg-subtle)] border border-[var(--border-subtle)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-rose-500 placeholder-[var(--text-placeholder)]"
               />
+              {!authConfigured && (
+                <input
+                  type="password"
+                  placeholder="Confirm Admin Password"
+                  value={setupConfirmPassword}
+                  onChange={(e) => {
+                    setSetupConfirmPassword(e.target.value);
+                    setDeleteError('');
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') confirmDelete();
+                  }}
+                  className="w-full px-3.5 py-2.5 rounded-[10px] bg-[var(--bg-subtle)] border border-[var(--border-subtle)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-rose-500 placeholder-[var(--text-placeholder)]"
+                />
+              )}
               {deleteError && <p className="text-xs text-[var(--text-rose)] mt-1.5">{deleteError}</p>}
             </div>
 
@@ -1833,16 +1974,18 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setDeleteModalOpen(false)}
-                className="flex-1 py-2.5 bg-[var(--bg-subtle)] hover:bg-[var(--bg-subtle-hover)] text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-[10px] text-xs font-semibold transition-colors cursor-pointer"
+                disabled={isSyncing}
+                className="flex-1 py-2.5 bg-[var(--bg-subtle)] hover:bg-[var(--bg-subtle-hover)] text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-[10px] text-xs font-semibold transition-colors cursor-pointer disabled:opacity-60"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmDelete}
-                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-[10px] text-xs font-semibold transition-colors shadow-sm cursor-pointer"
+                disabled={isSyncing}
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-[10px] text-xs font-semibold transition-colors shadow-sm cursor-pointer disabled:opacity-60"
               >
-                Delete Item
+                {isSyncing ? 'Saving...' : 'Delete Item'}
               </button>
             </div>
           </div>
@@ -1864,28 +2007,47 @@ export default function App() {
               <div className="w-9 h-9 rounded-lg bg-[var(--bg-gold-tint)] border border-[var(--border-gold)] text-[var(--text-gold)] flex items-center justify-center">
                 <Lock className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-[-0.02em]">Password Required</h3>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-[-0.02em]">
+                {authConfigured ? 'Password Required' : 'Set Admin Password'}
+              </h3>
             </div>
 
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-              Enter administrator password to save this project to your portfolio.
+              {authConfigured
+                ? 'Enter administrator password to save this project directly into source code.'
+                : 'First-time setup: choose an administrator password (min. 8 characters) to save projects into source code.'}
             </p>
 
-            <div>
+            <div className="space-y-2.5">
               <input
                 type="password"
-                placeholder="Enter Password"
+                placeholder={authConfigured ? 'Enter Password' : 'Create Admin Password (8+ chars)'}
                 value={savePassword}
                 onChange={(e) => {
                   setSavePassword(e.target.value);
                   setSaveError('');
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') confirmSaveToPortfolio();
+                  if (e.key === 'Enter' && authConfigured) confirmSaveToPortfolio();
                 }}
                 autoFocus
                 className="w-full px-3.5 py-2.5 rounded-[10px] bg-[var(--bg-subtle)] border border-[var(--border-subtle)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-gold)] placeholder-[var(--text-placeholder)]"
               />
+              {!authConfigured && (
+                <input
+                  type="password"
+                  placeholder="Confirm Admin Password"
+                  value={setupConfirmPassword}
+                  onChange={(e) => {
+                    setSetupConfirmPassword(e.target.value);
+                    setSaveError('');
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') confirmSaveToPortfolio();
+                  }}
+                  className="w-full px-3.5 py-2.5 rounded-[10px] bg-[var(--bg-subtle)] border border-[var(--border-subtle)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-gold)] placeholder-[var(--text-placeholder)]"
+                />
+              )}
               {saveError && <p className="text-xs text-[var(--text-rose)] mt-1.5">{saveError}</p>}
             </div>
 
@@ -1893,17 +2055,19 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setSaveModalOpen(false)}
-                className="flex-1 py-2.5 bg-[var(--bg-subtle)] hover:bg-[var(--bg-subtle-hover)] text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-[10px] text-xs font-semibold transition-colors cursor-pointer"
+                disabled={isSyncing}
+                className="flex-1 py-2.5 bg-[var(--bg-subtle)] hover:bg-[var(--bg-subtle-hover)] text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-[10px] text-xs font-semibold transition-colors cursor-pointer disabled:opacity-60"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmSaveToPortfolio}
-                className="flex-1 py-2.5 bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover-bg)] text-[var(--btn-primary-text)] hover:text-[var(--btn-primary-hover-text)] rounded-[10px] text-xs font-semibold transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                disabled={isSyncing}
+                className="flex-1 py-2.5 bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover-bg)] text-[var(--btn-primary-text)] hover:text-[var(--btn-primary-hover-text)] rounded-[10px] text-xs font-semibold transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
               >
                 <Bookmark className="w-3.5 h-3.5" />
-                Save Project
+                {isSyncing ? 'Saving...' : 'Save Project'}
               </button>
             </div>
           </div>
@@ -2034,15 +2198,21 @@ export default function App() {
               </div>
 
               {/* Password Protection */}
-              <div className="pt-3 border-t border-[var(--border-subtle)]">
-                <label className="text-xs font-semibold text-[var(--text-primary)] mb-1 flex items-center gap-1.5">
+              <div className="pt-3 border-t border-[var(--border-subtle)] space-y-2.5">
+                <label className="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-[var(--accent-gold)]" />
-                  Administrator Password *
+                  {authConfigured
+                    ? 'Administrator Password * (Saves directly to source code)'
+                    : 'Set Administrator Password * (First-time setup, 8+ chars)'}
                 </label>
                 <input
                   type="password"
                   required
-                  placeholder="Enter administrator password to save edits"
+                  placeholder={
+                    authConfigured
+                      ? 'Enter administrator password to save edits to code'
+                      : 'Create administrator password (min. 8 characters)'
+                  }
                   value={editPassword}
                   onChange={(e) => {
                     setEditPassword(e.target.value);
@@ -2050,26 +2220,41 @@ export default function App() {
                   }}
                   className="w-full px-3.5 py-2 rounded-[10px] bg-[var(--bg-subtle)] border border-[var(--border-subtle)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-gold)] placeholder-[var(--text-placeholder)]"
                 />
+                {!authConfigured && (
+                  <input
+                    type="password"
+                    required
+                    placeholder="Confirm administrator password"
+                    value={setupConfirmPassword}
+                    onChange={(e) => {
+                      setSetupConfirmPassword(e.target.value);
+                      setEditError('');
+                    }}
+                    className="w-full px-3.5 py-2 rounded-[10px] bg-[var(--bg-subtle)] border border-[var(--border-subtle)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-gold)] placeholder-[var(--text-placeholder)]"
+                  />
+                )}
                 {editError && <p className="text-xs text-[var(--text-rose)] mt-1.5">{editError}</p>}
               </div>
 
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
+                  disabled={isSyncing}
                   onClick={() => {
                     setEditModalOpen(false);
                     setEditingProject(null);
                   }}
-                  className="flex-1 py-2.5 bg-[var(--bg-subtle)] hover:bg-[var(--bg-subtle-hover)] text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-[10px] text-xs font-semibold transition-colors cursor-pointer"
+                  className="flex-1 py-2.5 bg-[var(--bg-subtle)] hover:bg-[var(--bg-subtle-hover)] text-[var(--text-primary)] border border-[var(--border-subtle)] rounded-[10px] text-xs font-semibold transition-colors cursor-pointer disabled:opacity-60"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover-bg)] text-[var(--btn-primary-text)] hover:text-[var(--btn-primary-hover-text)] rounded-[10px] text-xs font-semibold transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                  disabled={isSyncing}
+                  className="flex-1 py-2.5 bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover-bg)] text-[var(--btn-primary-text)] hover:text-[var(--btn-primary-hover-text)] rounded-[10px] text-xs font-semibold transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
                 >
                   <Bookmark className="w-3.5 h-3.5" />
-                  Save Changes
+                  {isSyncing ? 'Saving to Code...' : 'Save Changes'}
                 </button>
               </div>
             </form>
