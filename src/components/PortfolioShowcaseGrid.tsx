@@ -38,7 +38,7 @@ export interface PortfolioShowcaseGridProps {
 
 export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
   items,
-  categories = ['All', 'E-commerce', 'Real Estate', 'Restaurant', 'Cafes', 'Salon and BeautyParlour'],
+  categories = ['All', 'Real Estate', 'Restaurant', 'Cafes', 'E-commerce', 'Salon and BeautyParlour', 'Custom Site'],
   activeCategory = 'All',
   onCategoryChange,
   onViewItem,
@@ -67,6 +67,14 @@ export const PortfolioShowcaseGrid: React.FC<PortfolioShowcaseGridProps> = ({
         normalizedItem === 'salon' ||
         normalizedItem === 'beauty parlour' ||
         normalizedItem === 'beautyparlour'
+      );
+    }
+    if (normalizedSelected === 'custom site') {
+      return (
+        normalizedItem === 'custom site' ||
+        normalizedItem === 'custom web' ||
+        normalizedItem === 'custom website' ||
+        normalizedItem === 'custom'
       );
     }
     return false;

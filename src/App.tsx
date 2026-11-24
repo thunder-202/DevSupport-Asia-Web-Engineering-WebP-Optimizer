@@ -66,7 +66,7 @@ function GithubIcon({ className = 'w-4 h-4' }: { className?: string }) {
   );
 }
 
-const CATEGORIES = ['All', 'E-commerce', 'Real Estate', 'Restaurant', 'Cafes', 'Salon and BeautyParlour'];
+const CATEGORIES = ['All', 'Real Estate', 'Restaurant', 'Cafes', 'E-commerce', 'Salon and BeautyParlour', 'Custom Site'];
 
 export default function App() {
   // Converter States
