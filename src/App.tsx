@@ -561,8 +561,14 @@ export default function App() {
       <header className="sticky top-0 z-40 glass-nav border-b border-[var(--border-subtle)] backdrop-blur-md transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-[12px] bg-[var(--btn-primary-bg)] border border-[var(--border-gold)] flex items-center justify-center font-bold text-[var(--btn-primary-text)] text-base shadow-[var(--card-shadow)]">
-              DS
+            <div className="w-10 h-10 rounded-[12px] bg-[#F7F7F7] border border-[var(--border-gold)] relative overflow-hidden shadow-[var(--card-shadow)] shrink-0">
+              <img
+                src="/assets/aistudio/Screenshot_from_2026-11-25_02-00-54_d9867eb0.png"
+                alt="Devsupport Asia Logo"
+                className="absolute max-w-none w-[172px] h-[77px] left-1/2 -translate-x-1/2 -top-[8px] select-none pointer-events-none"
+                loading="eager"
+                decoding="async"
+              />
             </div>
             <div>
               <span className="text-lg font-bold tracking-[-0.02em] text-[var(--text-primary)]">
