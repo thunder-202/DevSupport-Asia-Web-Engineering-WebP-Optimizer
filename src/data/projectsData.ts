@@ -196,6 +196,17 @@ export const HARDCODED_PROJECTS: PortfolioItem[] = [
    date: '2026-03-05',
    sizeKb: '48.5',
    isPermanent: true,
+   },
+   {
+    id:'115',
+    title:'MAISON SOLÈNE',
+    category:'Salon and BeautyParlour',
+    description:'A local service provider relied on manual phone calls for bookings, missing out on potential customers after operating hours. Action: Developed an intuitive front-end dashboard featuring clear call-to-action sections, structured navigation, and client-side form validation. Result: Reduced manual scheduling friction and provided a polished 24/7 digital touchpoint to boost client conversions.',
+    liveUrl:'https://maison-sol-ne.onrender.com/',
+    dataUrl:'https://i.ibb.co.com/wrJg1gN8/Screenshot-from-2026-11-25-14-38-14.png',
+    date:'2026-25-11',
+    sizeKb:'50.4',
+    isPermanent:true,
    }
 ];
 
