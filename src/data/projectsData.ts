@@ -207,7 +207,7 @@ export const HARDCODED_PROJECTS: PortfolioItem[] = [
     date:'2026-25-11',
     sizeKb:'50.4',
     isPermanent:true,
-   },
+   }
 ];
 
 // Initial default items guaranteed to render statically on any external visitor/reviewer load

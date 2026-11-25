@@ -69,7 +69,12 @@ function GithubIcon({ className = 'w-4 h-4' }: { className?: string }) {
 const CATEGORIES = ['All', 'Real Estate', 'Restaurant', 'Cafes', 'E-commerce', 'Salon and BeautyParlour', 'Custom Site'];
 
 const computeProjectsSignature = (items: PortfolioItem[]) =>
-  items.map((p) => `${p.id}:${p.title}:${p.category}`).join('|');
+  items
+    .map(
+      (p) =>
+        `${p.id}:${p.title}:${p.category}:${p.description || ''}:${p.githubUrl || ''}:${p.liveUrl || ''}:${p.dataUrl}:${p.date}:${p.sizeKb}`
+    )
+    .join('|');
 
 export default function App() {
   // Converter States
@@ -105,14 +110,16 @@ export default function App() {
               !PLACEHOLDER_PROJECT_TITLES.has(String(item.title).trim())
           );
 
+          if (validSavedItems.length > 0 && savedSig === currentSig) {
+            return validSavedItems;
+          }
+
           if (validSavedItems.length > 0) {
-            if (!savedSig || savedSig === currentSig) {
-              return validSavedItems;
-            }
-            // Source code was updated externally: merge new code with any unsynced custom IDs
+            // Source code in src/data/projectsData.ts changed or no base signature existed yet:
+            // preserve any unsynced custom IDs while keeping all HARDCODED_PROJECTS up to date.
             const hardcodedIds = new Set(HARDCODED_PROJECTS.map((p) => p.id));
             const newlyAddedProjects = validSavedItems.filter(
-              (item: PortfolioItem) => !hardcodedIds.has(item.id)
+              (item: PortfolioItem) => !hardcodedIds.has(Number(item.id))
             );
             localStorage.setItem('my_portfolio_base_sig', currentSig);
             return [...newlyAddedProjects, ...HARDCODED_PROJECTS];
@@ -225,15 +232,17 @@ export default function App() {
       .then((data) => {
         if (active && data && Array.isArray(data.projects) && data.projects.length > 0) {
           const diskSig = computeProjectsSignature(data.projects);
-          const bundledSig = computeProjectsSignature(HARDCODED_PROJECTS);
-          if (diskSig !== bundledSig) {
-            setPortfolioItems(data.projects);
-            try {
-              localStorage.setItem('my_portfolio_base_sig', diskSig);
-            } catch {
-              // Ignore
+          setPortfolioItems((current) => {
+            if (diskSig !== computeProjectsSignature(current)) {
+              try {
+                localStorage.setItem('my_portfolio_base_sig', diskSig);
+              } catch {
+                // Ignore
+              }
+              return data.projects;
             }
-          }
+            return current;
+          });
         }
       })
       .catch(() => {

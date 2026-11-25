@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import crypto from 'node:crypto';
 import 'dotenv/config';
 
@@ -287,24 +288,15 @@ export const INITIAL_PORTFOLIO_ITEMS: PortfolioItem[] = HARDCODED_PROJECTS;
 `;
 }
 
-function readProjectsFromDisk(): PortfolioItemPayload[] | null {
+async function readProjectsFromDisk(): Promise<PortfolioItemPayload[] | null> {
   try {
-    const content = fs.readFileSync(PROJECTS_FILE, 'utf-8');
-    const marker = 'export const HARDCODED_PROJECTS: PortfolioItem[] = ';
-    const startIdx = content.indexOf(marker);
-    if (startIdx === -1) return null;
-    const jsonStart = content.indexOf('[', startIdx);
-    const endMarker = '\n\n// Initial default items';
-    const endIdx = content.indexOf(endMarker, jsonStart);
-    if (jsonStart === -1 || endIdx === -1) return null;
-    const arrayBlock = content.slice(jsonStart, endIdx).replace(/;\s*$/, '');
-    // Fallback safe eval-free parse if strict JSON, otherwise use vm only when JSON.parse fails
-    try {
-      const parsed = JSON.parse(arrayBlock);
-      return Array.isArray(parsed) ? parsed : null;
-    } catch {
-      return null;
+    const stat = fs.statSync(PROJECTS_FILE);
+    const modUrl = `${pathToFileURL(PROJECTS_FILE).href}?t=${stat.mtimeMs}`;
+    const mod = (await import(modUrl)) as { HARDCODED_PROJECTS?: PortfolioItemPayload[] };
+    if (Array.isArray(mod.HARDCODED_PROJECTS)) {
+      return mod.HARDCODED_PROJECTS;
     }
+    return null;
   } catch {
     return null;
   }
@@ -320,6 +312,25 @@ async function startServer() {
     middlewares: express.RequestHandler;
     moduleGraph: { invalidateAll: () => void };
   } | null = null;
+  let lastProjectsMtime = 0;
+  try {
+    lastProjectsMtime = fs.statSync(PROJECTS_FILE).mtimeMs;
+  } catch {
+    lastProjectsMtime = 0;
+  }
+
+  const syncViteCacheWithDisk = () => {
+    if (!viteServer) return;
+    try {
+      const mtime = fs.statSync(PROJECTS_FILE).mtimeMs;
+      if (mtime !== lastProjectsMtime) {
+        lastProjectsMtime = mtime;
+        viteServer.moduleGraph.invalidateAll();
+      }
+    } catch {
+      // Ignore stat errors
+    }
+  };
 
   if (process.env.NODE_ENV !== 'production') {
     const { createServer } = await import('vite');
@@ -331,6 +342,11 @@ async function startServer() {
       appType: 'spa',
     });
   }
+
+  app.use((_req: Request, _res: Response, next) => {
+    syncViteCacheWithDisk();
+    next();
+  });
 
   // Auth status endpoint (safe public boolean, never exposes credentials)
   app.get('/api/auth/status', (_req: Request, res: Response) => {
@@ -365,9 +381,9 @@ async function startServer() {
     res.json({ ok: true, configured: true });
   });
 
-  // Optional live read endpoint so production builds reflect disk edits immediately
-  app.get('/api/projects', (_req: Request, res: Response) => {
-    const diskProjects = readProjectsFromDisk();
+  // Live read endpoint so client always gets all projects saved in src/data/projectsData.ts
+  app.get('/api/projects', async (_req: Request, res: Response) => {
+    const diskProjects = await readProjectsFromDisk();
     if (!diskProjects) {
       res.status(200).json({ projects: null });
       return;
