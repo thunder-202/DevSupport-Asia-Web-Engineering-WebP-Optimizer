@@ -1186,7 +1186,7 @@ export default function App() {
                       <div className="w-5 h-5 rounded-full bg-[var(--bg-gold-tint)] flex items-center justify-center text-[var(--text-gold)] shrink-0">
                         <Check className="w-3.5 h-3.5" />
                       </div>
-                      <span>Futuristic, Motion-Rich &amp; 3D/Micro-Interactive UI</span>
+                      <span>Modern, Motion-Rich &amp; 3D/Micro-Interactive UI</span>
                     </li>
                     <li className="flex items-center gap-2.5">
                       <div className="w-5 h-5 rounded-full bg-[var(--bg-gold-tint)] flex items-center justify-center text-[var(--text-gold)] shrink-0">
@@ -1198,7 +1198,7 @@ export default function App() {
                       <div className="w-5 h-5 rounded-full bg-[var(--bg-gold-tint)] flex items-center justify-center text-[var(--text-gold)] shrink-0">
                         <Check className="w-3.5 h-3.5" />
                       </div>
-                      <span>Dedicated Lead Engineer &amp; Priority Channel</span>
+                      <span>Direct Communication with the Developer &amp; Priority Channel</span>
                     </li>
                   </ul>
                 </div>
