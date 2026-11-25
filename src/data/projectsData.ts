@@ -198,7 +198,7 @@ export const HARDCODED_PROJECTS: PortfolioItem[] = [
    isPermanent: true,
    },
    {
-    id:'115',
+    id: 115,
     title:'MAISON SOLÈNE',
     category:'Salon and BeautyParlour',
     description:'A local service provider relied on manual phone calls for bookings, missing out on potential customers after operating hours. Action: Developed an intuitive front-end dashboard featuring clear call-to-action sections, structured navigation, and client-side form validation. Result: Reduced manual scheduling friction and provided a polished 24/7 digital touchpoint to boost client conversions.',

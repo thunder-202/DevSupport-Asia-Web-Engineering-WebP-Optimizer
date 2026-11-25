@@ -838,8 +838,7 @@ export default function App() {
                 </h1>
 
                 <p className="text-lg text-[var(--text-secondary)] leading-relaxed max-w-2xl">
-                  We build fast, secure, and compliance-ready web applications for businesses across Asia and globally.
-                  From modern responsive frontend design to lightweight image optimization pipelines.
+                  I build websites that take bookings and display services fast, secure, and designed to just work. Serving businesses across Asia and globally, with a focus on clean frontend design and lightweight infrastructure.
                 </p>
 
                 {/* Technology Skills Grid directly inside left column */}
@@ -972,7 +971,7 @@ export default function App() {
                         <Server className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-sm text-[var(--text-primary)]">99.9% Server Uptime Guarantee</h4>
+                        <h4 className="font-semibold text-sm text-[var(--text-primary)]">Reliable Cloud Hosting</h4>
                         <p className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
                           Managed cloud hosting infrastructure hosted on global CDN networks with automatic redundancy.
                         </p>
@@ -1130,7 +1129,7 @@ export default function App() {
               <div className="bg-[var(--bg-surface)] rounded-[12px] p-8 border border-[var(--border-gold)] shadow-[var(--card-shadow)] luxury-card-hover relative flex flex-col justify-between group">
                 <div className="absolute -top-3.5 right-6 px-3.5 py-1 bg-[var(--accent-gold)] text-[#0B0D12] text-[11px] font-bold rounded-[10px] uppercase tracking-[0.08em] shadow-sm flex items-center gap-1.5">
                   <Sparkles className="w-3 h-3" />
-                  ADVANCE &amp; FUTURISTIC
+                  ADVANCED CUSTOM BUILD
                 </div>
                 <div>
                   <div className="text-xs font-semibold text-[var(--text-gold)] uppercase tracking-[0.12em] mb-2 flex items-center gap-1.5">
@@ -1138,7 +1137,7 @@ export default function App() {
                     Next-Gen Architecture
                   </div>
                   <h3 className="text-2xl font-bold text-[var(--text-primary)] tracking-[-0.02em] flex items-center gap-2">
-                    Futuristic &amp; New Designed
+                    Custom Web Applications
                   </h3>
                   <div className="my-5 flex flex-wrap items-baseline gap-1">
                     <span className="text-3xl sm:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight tabular-nums">
@@ -1150,15 +1149,15 @@ export default function App() {
                   <div className="p-3.5 mb-5 rounded-[12px] bg-[var(--bg-subtle)] border border-[var(--border-subtle)] flex items-center justify-between text-xs">
                     <span className="text-[var(--text-primary)] font-semibold flex items-center gap-1.5">
                       <ShieldCheck className="w-4 h-4 text-[var(--accent-gold)]" />
-                      Monthly Support:
+                      Post-Launch Support:
                     </span>
                     <span className="px-2.5 py-0.5 rounded-[8px] bg-[var(--bg-gold-tint)] text-[var(--text-gold-strong)] font-bold uppercase tracking-wider text-[11px] border border-[var(--border-gold)]">
-                      FREE Included
+                      30 DAYS INCLUDED
                     </span>
                   </div>
 
                   <p className="text-sm text-[var(--text-secondary)] mb-6 leading-relaxed">
-                    Advanced, futuristic, cutting-edge new design tailored to high-growth brands. Every single service is included with ongoing monthly support at no extra cost.
+                    Advanced, high-performance web applications tailored to growing brands. I handle the entire pipeline from UI/UX design to API integration and SEO.
                   </p>
 
                   <ul className="space-y-3.5 text-sm text-[var(--text-secondary)] mb-8">
@@ -1166,13 +1165,13 @@ export default function App() {
                       <div className="w-5 h-5 rounded-full bg-[var(--bg-gold-tint)] flex items-center justify-center text-[var(--text-gold)] shrink-0">
                         <Check className="w-3.5 h-3.5" />
                       </div>
-                      <span><strong className="text-[var(--text-primary)]">Every Service Included:</strong> UI/UX, Build, APIs &amp; SEO</span>
+                      <span><strong className="text-[var(--text-primary)]">Full-Stack Delivery:</strong> UI/UX, Development, APIs &amp; SEO</span>
                     </li>
                     <li className="flex items-center gap-2.5">
                       <div className="w-5 h-5 rounded-full bg-[var(--bg-gold-tint)] flex items-center justify-center text-[var(--text-gold)] shrink-0">
                         <Check className="w-3.5 h-3.5" />
                       </div>
-                      <span><strong className="text-[var(--text-primary)]">Free Monthly Support:</strong> 24/7 care, updates &amp; uptime</span>
+                      <span><strong className="text-[var(--text-primary)]">30 Days Post-Launch Care:</strong> Updates, bug fixes &amp; uptime monitoring</span>
                     </li>
                     <li className="flex items-center gap-2.5">
                       <div className="w-5 h-5 rounded-full bg-[var(--bg-gold-tint)] flex items-center justify-center text-[var(--text-gold)] shrink-0">
@@ -1199,7 +1198,7 @@ export default function App() {
                   href="#contact"
                   className="w-full py-3 px-4 rounded-[12px] bg-[var(--btn-primary-bg)] hover:bg-[var(--btn-primary-hover-bg)] text-[var(--btn-primary-text)] hover:text-[var(--btn-primary-hover-text)] font-semibold text-sm text-center shadow-sm transition-all duration-300 flex items-center justify-center gap-2"
                 >
-                  Request Futuristic Project
+                  Let&apos;s Discuss Your Build
                   <ChevronRight className="w-4 h-4" />
                 </a>
               </div>
