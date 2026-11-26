@@ -19,6 +19,16 @@ export const PLACEHOLDER_PROJECT_IDS = new Set<number>([
   1710000004,
   1710000005,
   1710000006,
+  1710000007,
+  1710000008,
+  1710000009,
+  1710000010,
+  1710000011,
+  1710000012,
+  1710000013,
+  1710000014,
+  1710000015,
+  1710000016,
 ]);
 
 export const PLACEHOLDER_PROJECT_TITLES = new Set<string>([
@@ -206,6 +216,17 @@ export const HARDCODED_PROJECTS: PortfolioItem[] = [
     dataUrl:'https://i.ibb.co.com/wrJg1gN8/Screenshot-from-2026-11-25-14-38-14.png',
     date:'2026-25-11',
     sizeKb:'50.4',
+    isPermanent:true,
+   },
+   {
+    id:116,
+    title:'Iron Blade',
+    category:'Salon and BeautyParlour',
+    description:'Context:A modern barber shop website designed to showcase grooming services, display pricing, and streamline appointment bookings. Built with a clean, high-contrast UI to match the brand\'s style.',
+    liveUrl:'https://iron-blade.onrender.com/',
+    dataUrl:'https://i.ibb.co.com/k66fJb04/optimized-image-1.webp',
+    date:'2026-26-11',
+    sizeKb:'48.50',
     isPermanent:true,
    }
 ];
